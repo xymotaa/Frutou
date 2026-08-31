@@ -1,30 +1,30 @@
 import { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ExploreCard } from '@/components/ExploreCard';
 import { ExploreMap } from '@/components/ExploreMap';
-import { FilterChips, type FilterOption } from '@/components/FilterChips';
 import { HandHeartIcon, ListIcon, MapIcon, MicIcon } from '@/components/icons';
+import { ScreenHeader } from '@/components/ScreenHeader';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { SearchBar } from '@/components/SearchBar';
 import { mockListings } from '@/data/mockListings';
+import { usuarioAtual } from '@/data/mockPerfil';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
-const USER_NAME = 'Ryvera';
 
 type ViewMode = 'lista' | 'mapa';
 type ModalidadeFiltro = 'todas' | 'doacao' | 'venda';
 type DistanciaFiltro = 'todas' | '1' | '3';
 
-const MODALIDADE_OPTS: readonly FilterOption<ModalidadeFiltro>[] = [
+const MODALIDADE_OPTS: { value: ModalidadeFiltro; label: string }[] = [
   { value: 'todas', label: 'Todas' },
   { value: 'doacao', label: 'Doação' },
   { value: 'venda', label: 'À venda' },
 ];
 
-const DISTANCIA_OPTS: readonly FilterOption<DistanciaFiltro>[] = [
+const DISTANCIA_OPTS: { value: DistanciaFiltro; label: string }[] = [
   { value: 'todas', label: 'Qualquer distância' },
   { value: '1', label: 'Até 1 km' },
   { value: '3', label: 'Até 3 km' },
@@ -66,20 +66,10 @@ export function ExploreScreen({
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      {/* Header */}
-      <View className="flex-row items-center justify-between border-b border-line bg-input px-5 py-3">
-        <Text
-          className="text-[19px] font-bold text-primary"
-          accessibilityRole="header"
-        >
-          frut<Text className="text-accent">ou</Text>
-        </Text>
-        <View className="h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-line bg-surface">
-          <Text className="text-[15px] font-bold text-primary">
-            {USER_NAME.charAt(0)}
-          </Text>
-        </View>
-      </View>
+      <ScreenHeader
+        avatarInitial={usuarioAtual.inicial}
+        onPressAvatar={() => navigation.navigate('Usuario')}
+      />
 
       <FlatList
         data={mode === 'lista' ? listaFiltrada : []}
@@ -111,21 +101,72 @@ export function ExploreScreen({
               }}
             />
 
-            {/* Filtros */}
-            <View className="gap-2.5">
-              <FilterChips
-                options={MODALIDADE_OPTS}
-                selected={modalidade}
-                onSelect={setModalidade}
-                accessibilityLabel="Filtrar por modalidade"
-              />
-              <FilterChips
-                options={DISTANCIA_OPTS}
-                selected={distancia}
-                onSelect={setDistancia}
-                accessibilityLabel="Filtrar por distância"
-              />
-            </View>
+            {/* Filtros — uma linha só, rolável na horizontal */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                gap: 8,
+                paddingRight: 20,
+                alignItems: 'center',
+              }}
+              accessibilityRole="tablist"
+              accessibilityLabel="Filtros de busca"
+            >
+              {MODALIDADE_OPTS.map((opt) => {
+                const active = opt.value === modalidade;
+                return (
+                  <Pressable
+                    key={`m-${opt.value}`}
+                    onPress={() => setModalidade(opt.value)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    accessibilityLabel={`Modalidade: ${opt.label}`}
+                    className={`rounded-full border px-4 py-2 active:opacity-80 ${
+                      active
+                        ? 'border-primary bg-primary'
+                        : 'border-line bg-surface'
+                    }`}
+                  >
+                    <Text
+                      className={`text-[13px] font-semibold ${
+                        active ? 'text-white' : 'text-muted'
+                      }`}
+                    >
+                      {opt.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+
+              <View className="mx-1 h-5 w-px bg-line" />
+
+              {DISTANCIA_OPTS.map((opt) => {
+                const active = opt.value === distancia;
+                return (
+                  <Pressable
+                    key={`d-${opt.value}`}
+                    onPress={() => setDistancia(opt.value)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    accessibilityLabel={`Distância: ${opt.label}`}
+                    className={`rounded-full border px-4 py-2 active:opacity-80 ${
+                      active
+                        ? 'border-primary bg-primary'
+                        : 'border-line bg-surface'
+                    }`}
+                  >
+                    <Text
+                      className={`text-[13px] font-semibold ${
+                        active ? 'text-white' : 'text-muted'
+                      }`}
+                    >
+                      {opt.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
 
             {/* Contagem + toggle lista/mapa */}
             <View className="flex-row items-center justify-between pt-1">

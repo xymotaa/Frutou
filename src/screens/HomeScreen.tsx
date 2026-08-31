@@ -4,13 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { HandHeartIcon, PlusIcon, SlidersIcon } from '@/components/icons';
 import { ListingCard } from '@/components/ListingCard';
+import { ScreenHeader } from '@/components/ScreenHeader';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { SearchBar } from '@/components/SearchBar';
 import { mockListings } from '@/data/mockListings';
+import { usuarioAtual } from '@/data/mockPerfil';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
-
-const USER_NAME = 'Ryvera';
 
 function greeting(date = new Date()): string {
   const h = date.getHours();
@@ -24,22 +24,10 @@ export function HomeScreen({ navigation }: MainTabScreenProps<'Inicio'>) {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      {/* Header */}
-      <View className="flex-row items-center justify-between border-b border-line bg-input px-5 py-3">
-        <Text className="text-[19px] font-bold text-primary" accessibilityRole="header">
-          frut<Text className="text-accent">ou</Text>
-        </Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Abrir seu perfil"
-          onPress={() => navigation.navigate('Usuario')}
-          className="h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-line bg-surface"
-        >
-          <Text className="text-[15px] font-bold text-primary">
-            {USER_NAME.charAt(0)}
-          </Text>
-        </Pressable>
-      </View>
+      <ScreenHeader
+        avatarInitial={usuarioAtual.inicial}
+        onPressAvatar={() => navigation.navigate('Usuario')}
+      />
 
       <FlatList
         data={mockListings}
@@ -56,7 +44,7 @@ export function HomeScreen({ navigation }: MainTabScreenProps<'Inicio'>) {
         )}
         ListHeaderComponent={
           <View className="gap-4 px-5 pb-1 pt-4">
-            <ScreenTitle title={`${saudacao}, ${USER_NAME}!`} />
+            <ScreenTitle title={`${saudacao}, ${usuarioAtual.primeiroNome}!`} />
 
             <SearchBar
               placeholder="O que você está procurando?"

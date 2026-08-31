@@ -18,6 +18,8 @@ export type RootStackParamList = {
   SignUp: undefined;
   Main: NavigatorScreenParams<MainTabParamList> | undefined;
   Detalhes: { id: string };
+  MeusAnuncios: undefined;
+  Avaliacao: { nomeParceiro: string };
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

@@ -8,9 +8,11 @@ import {
   PlusIcon,
   UserTabIcon,
 } from '@/components/icons';
+import { CriarAnuncioScreen } from '@/screens/CriarAnuncioScreen';
 import { ExploreScreen } from '@/screens/ExploreScreen';
 import { HomeScreen } from '@/screens/HomeScreen';
-import { PlaceholderScreen } from '@/screens/PlaceholderScreen';
+import { MensagensScreen } from '@/screens/MensagensScreen';
+import { PerfilScreen } from '@/screens/PerfilScreen';
 import { color } from '@/theme/tokens';
 
 import type { MainTabParamList } from './types';
@@ -56,6 +58,7 @@ export function MainTabs() {
       />
       <Tab.Screen
         name="Anunciar"
+        component={CriarAnuncioScreen}
         options={{
           tabBarLabel: () => null,
           tabBarIcon: () => (
@@ -65,30 +68,26 @@ export function MainTabs() {
           ),
           tabBarIconStyle: { marginTop: -14 },
         }}
-      >
-        {() => <PlaceholderScreen title="Anunciar" />}
-      </Tab.Screen>
+      />
       <Tab.Screen
         name="Mensagens"
+        component={MensagensScreen}
         options={{
           tabBarIcon: ({ color: c, focused }) => (
             <MessageIcon size={24} color={c} filled={focused} />
           ),
         }}
-      >
-        {() => <PlaceholderScreen title="Mensagens" />}
-      </Tab.Screen>
+      />
       <Tab.Screen
         name="Usuario"
+        component={PerfilScreen}
         options={{
-          tabBarLabel: 'Usuário',
+          tabBarLabel: 'Perfil',
           tabBarIcon: ({ color: c, focused }) => (
             <UserTabIcon size={24} color={c} filled={focused} />
           ),
         }}
-      >
-        {() => <PlaceholderScreen title="Usuário" />}
-      </Tab.Screen>
+      />
     </Tab.Navigator>
   );
 }

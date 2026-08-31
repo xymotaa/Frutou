@@ -183,6 +183,9 @@ export function DetalhesScreen({
       {/* CTA fixo */}
       <View className="border-t border-line bg-surface px-5 pb-2 pt-3">
         <Pressable
+          onPress={() =>
+            navigation.navigate('Avaliacao', { nomeParceiro: listing.autor })
+          }
           accessibilityRole="button"
           accessibilityLabel="Demonstrar interesse neste anúncio"
           className={`h-14 flex-row items-center justify-center gap-2 rounded-field active:opacity-80 ${

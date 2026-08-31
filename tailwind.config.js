@@ -21,8 +21,10 @@ module.exports = {
         input: '#F4F5F3',
         line: '#E4E7E2',
         ink: '#1F2421',
+        'ink-scrim': 'rgba(31,36,33,0.45)',
         muted: '#6B7280',
         danger: '#DC2626',
+        'danger-soft': '#FCE9E9',
       },
       borderRadius: {
         field: '14px',

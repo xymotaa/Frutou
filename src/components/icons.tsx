@@ -461,3 +461,225 @@ export function WalkIcon({
     </Svg>
   );
 }
+
+export function CameraPlusIcon({
+  size = 24,
+  color: stroke = color.muted,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M4 8h3l1.5-2h5L15 8h5a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M12 16.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM19 3v4M17 5h4"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+export function ImageIcon({ size = 24, color: stroke = color.line }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="m4 16 5-4 4 3 3-2 4 3"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Circle cx={9} cy={9} r={1.5} fill={stroke} />
+    </Svg>
+  );
+}
+
+export function ChevronDownIcon({
+  size = 20,
+  color: stroke = color.muted,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="m6 9 6 6 6-6"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function ChevronRightIcon({
+  size = 20,
+  color: stroke = color.muted,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="m9 5 7 7-7 7"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function GiftIcon({
+  size = 18,
+  color: stroke = '#FFFFFF',
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M4 11h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-9ZM3 7h18v4H3V7ZM12 7v14"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M12 7S9.5 3 7.5 3 5 6 7 7h5Zm0 0s2.5-4 4.5-4S19 6 17 7h-5Z"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function ArchiveIcon({
+  size = 20,
+  color: stroke = color.muted,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M4 7h16v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7ZM3 4h18v3H3V4ZM9 12h6"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+export function HistoryIcon({
+  size = 20,
+  color: stroke = color.muted,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M4 12a8 8 0 1 0 3-6.2M4 4v3.5h3.5M12 8v4l3 2"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function SettingsIcon({
+  size = 20,
+  color: stroke = color.muted,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={12} cy={12} r={3.2} stroke={stroke} strokeWidth={2} />
+      <Path
+        d="M19.4 13a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function LogOutIcon({
+  size = 20,
+  color: stroke = color.danger,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M14 4H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h8M16 8l4 4-4 4M20 12H9"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function BanIcon({ size = 18, color: stroke = color.muted }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={12} cy={12} r={9} stroke={stroke} strokeWidth={2} />
+      <Path d="m6 6 12 12" stroke={stroke} strokeWidth={2} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+export function PencilIcon({ size = 18, color: stroke = color.ink }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M4 20h4L19 9a2 2 0 0 0-3-3L5 17v3ZM14 6l4 4"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function BellIcon({ size = 20, color: stroke = color.accent }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M6 10a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6ZM10 20a2 2 0 0 0 4 0"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function CheckCircleIcon({
+  size = 20,
+  color: stroke = '#FFFFFF',
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={12} cy={12} r={9} stroke={stroke} strokeWidth={2} />
+      <Path
+        d="m8 12 3 3 5-6"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
