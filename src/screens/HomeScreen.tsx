@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
-import { FlatList, Image, Pressable, Text, View } from 'react-native';
+import { FlatList, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { logoMark } from '@/assets';
 import { HandHeartIcon, PlusIcon, SearchIcon, SlidersIcon } from '@/components/icons';
 import { ListingCard } from '@/components/ListingCard';
 import { mockListings } from '@/data/mockListings';
@@ -25,17 +24,9 @@ export function HomeScreen({ navigation }: MainTabScreenProps<'Inicio'>) {
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       {/* Header */}
       <View className="flex-row items-center justify-between border-b border-line bg-input px-5 py-3">
-        <View className="flex-row items-center gap-2">
-          <Image
-            source={logoMark}
-            style={{ width: 32, height: 32 }}
-            resizeMode="contain"
-            accessibilityLabel="Frutou"
-          />
-          <Text className="text-[17px] font-bold text-primary">
-            frut<Text className="text-accent">ou</Text>
-          </Text>
-        </View>
+        <Text className="text-[19px] font-bold text-primary" accessibilityRole="header">
+          frut<Text className="text-accent">ou</Text>
+        </Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Abrir seu perfil"
