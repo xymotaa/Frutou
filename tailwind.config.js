@@ -5,8 +5,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Paleta da logo Frutou — verde (mão/folha) + laranja (fruta).
-        // Ajustar tons finos quando os prints de design chegarem.
+        // Paleta da marca Frutou — verde (mão/folha) + laranja (fruta).
         primary: {
           DEFAULT: '#2E7D32',
           light: '#5BA83E',
@@ -19,7 +18,14 @@ module.exports = {
         },
         surface: '#FFFFFF',
         background: '#FFFFFF',
+        input: '#F4F5F3',
+        line: '#E4E7E2',
+        ink: '#1F2421',
         muted: '#6B7280',
+        danger: '#DC2626',
+      },
+      borderRadius: {
+        field: '14px',
       },
     },
   },
