@@ -1,16 +1,13 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ExploreCard } from '@/components/ExploreCard';
 import { ExploreMap } from '@/components/ExploreMap';
-import {
-  ListIcon,
-  MapIcon,
-  MicIcon,
-  SearchIcon,
-  SlidersIcon,
-} from '@/components/icons';
+import { FilterChips, type FilterOption } from '@/components/FilterChips';
+import { HandHeartIcon, ListIcon, MapIcon, MicIcon } from '@/components/icons';
+import { ScreenTitle } from '@/components/ScreenTitle';
+import { SearchBar } from '@/components/SearchBar';
 import { mockListings } from '@/data/mockListings';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
@@ -18,10 +15,33 @@ import { color } from '@/theme/tokens';
 const USER_NAME = 'Ryvera';
 
 type ViewMode = 'lista' | 'mapa';
+type ModalidadeFiltro = 'todas' | 'doacao' | 'venda';
+type DistanciaFiltro = 'todas' | '1' | '3';
+
+const MODALIDADE_OPTS: readonly FilterOption<ModalidadeFiltro>[] = [
+  { value: 'todas', label: 'Todas' },
+  { value: 'doacao', label: 'Doação' },
+  { value: 'venda', label: 'À venda' },
+];
+
+const DISTANCIA_OPTS: readonly FilterOption<DistanciaFiltro>[] = [
+  { value: 'todas', label: 'Qualquer distância' },
+  { value: '1', label: 'Até 1 km' },
+  { value: '3', label: 'Até 3 km' },
+];
+
+/** Converte "1,2 km" / "850 m" para número em km. */
+function distanciaEmKm(texto: string): number {
+  const normalizado = texto.replace(',', '.');
+  const valor = parseFloat(normalizado);
+  return normalizado.includes('km') ? valor : valor / 1000;
+}
 
 export function ExploreScreen(_props: MainTabScreenProps<'Explorar'>) {
   const [mode, setMode] = useState<ViewMode>('lista');
   const [favoritos, setFavoritos] = useState<Set<string>>(new Set());
+  const [modalidade, setModalidade] = useState<ModalidadeFiltro>('todas');
+  const [distancia, setDistancia] = useState<DistanciaFiltro>('todas');
 
   const toggleFavorito = useCallback((id: string) => {
     setFavoritos((prev) => {
@@ -31,6 +51,16 @@ export function ExploreScreen(_props: MainTabScreenProps<'Explorar'>) {
       return next;
     });
   }, []);
+
+  const listaFiltrada = useMemo(() => {
+    return mockListings.filter((l) => {
+      if (modalidade !== 'todas' && l.modalidade !== modalidade) return false;
+      if (distancia !== 'todas' && distanciaEmKm(l.distancia) > Number(distancia)) {
+        return false;
+      }
+      return true;
+    });
+  }, [modalidade, distancia]);
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -50,7 +80,7 @@ export function ExploreScreen(_props: MainTabScreenProps<'Explorar'>) {
       </View>
 
       <FlatList
-        data={mode === 'lista' ? mockListings : []}
+        data={mode === 'lista' ? listaFiltrada : []}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24, gap: 16 }}
         showsVerticalScrollIndicator={false}
@@ -63,50 +93,42 @@ export function ExploreScreen(_props: MainTabScreenProps<'Explorar'>) {
           />
         )}
         ListHeaderComponent={
-          <View className="gap-4 pb-1 pt-5">
-            <View className="gap-1">
-              <Text className="text-[26px] font-bold text-ink">
-                Descubra frutas
-              </Text>
-              <Text className="text-[14px] leading-5 text-muted">
-                Encontre colheitas fresquinhas perto de você.
-              </Text>
-            </View>
+          <View className="gap-4 pb-1 pt-4">
+            <ScreenTitle
+              title="Descubra frutas"
+              subtitle="Encontre colheitas fresquinhas perto de você."
+            />
 
-            {/* Busca */}
-            <View className="h-12 flex-row items-center gap-2 rounded-field border border-line bg-input px-3">
-              <SearchIcon size={18} color={color.muted} />
-              <Text className="flex-1 text-[14px] text-muted">
-                Qual fruta você procura?
-              </Text>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Buscar por voz"
-                hitSlop={8}
-                className="h-8 w-8 items-center justify-center rounded-full bg-surface"
-              >
-                <MicIcon size={16} color={color.muted} />
-              </Pressable>
-            </View>
+            <SearchBar
+              placeholder="Qual fruta você procura?"
+              trailing={{
+                icon: <MicIcon size={18} color={color.ink} />,
+                onPress: () => {},
+                accessibilityLabel: 'Buscar por voz',
+              }}
+            />
 
-            {/* Chip de filtros */}
-            <View className="flex-row">
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Abrir filtros"
-                className="flex-row items-center gap-1.5 rounded-full bg-accent px-4 py-2 active:opacity-80"
-              >
-                <SlidersIcon size={15} color="#FFFFFF" />
-                <Text className="text-[13px] font-semibold text-white">
-                  Filtros
-                </Text>
-              </Pressable>
+            {/* Filtros */}
+            <View className="gap-2.5">
+              <FilterChips
+                options={MODALIDADE_OPTS}
+                selected={modalidade}
+                onSelect={setModalidade}
+                accessibilityLabel="Filtrar por modalidade"
+              />
+              <FilterChips
+                options={DISTANCIA_OPTS}
+                selected={distancia}
+                onSelect={setDistancia}
+                accessibilityLabel="Filtrar por distância"
+              />
             </View>
 
             {/* Contagem + toggle lista/mapa */}
             <View className="flex-row items-center justify-between pt-1">
               <Text className="text-[13px] text-muted">
-                {mockListings.length} frutas perto de você
+                {listaFiltrada.length}{' '}
+                {listaFiltrada.length === 1 ? 'fruta' : 'frutas'} perto de você
               </Text>
 
               <View className="flex-row overflow-hidden rounded-full border border-line bg-input">
@@ -141,9 +163,17 @@ export function ExploreScreen(_props: MainTabScreenProps<'Explorar'>) {
         ListEmptyComponent={
           mode === 'mapa' ? (
             <View className="h-[420px] overflow-hidden rounded-3xl border border-line">
-              <ExploreMap listings={mockListings} />
+              <ExploreMap listings={listaFiltrada} />
             </View>
-          ) : null
+          ) : (
+            <View className="items-center gap-2 px-8 pt-12">
+              <HandHeartIcon size={32} color={color.line} />
+              <Text className="text-center text-[14px] text-muted">
+                Nenhuma fruta com esses filtros. Tente ampliar a distância ou a
+                modalidade.
+              </Text>
+            </View>
+          )
         }
       />
     </SafeAreaView>

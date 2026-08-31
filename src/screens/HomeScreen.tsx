@@ -2,8 +2,10 @@ import { useMemo } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HandHeartIcon, PlusIcon, SearchIcon, SlidersIcon } from '@/components/icons';
+import { HandHeartIcon, PlusIcon, SlidersIcon } from '@/components/icons';
 import { ListingCard } from '@/components/ListingCard';
+import { ScreenTitle } from '@/components/ScreenTitle';
+import { SearchBar } from '@/components/SearchBar';
 import { mockListings } from '@/data/mockListings';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
@@ -49,26 +51,16 @@ export function HomeScreen({ navigation }: MainTabScreenProps<'Inicio'>) {
         renderItem={({ item }) => <ListingCard listing={item} />}
         ListHeaderComponent={
           <View className="gap-4 px-5 pb-1 pt-4">
-            <Text className="text-[20px] font-bold text-ink">
-              {saudacao}, {USER_NAME}!
-            </Text>
+            <ScreenTitle title={`${saudacao}, ${USER_NAME}!`} />
 
-            {/* Busca */}
-            <View className="flex-row items-center gap-2">
-              <View className="h-12 flex-1 flex-row items-center gap-2 rounded-field border border-line bg-input px-3">
-                <SearchIcon size={18} color={color.muted} />
-                <Text className="flex-1 text-[14px] text-muted">
-                  O que você está procurando?
-                </Text>
-              </View>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Filtros de busca"
-                className="h-12 w-12 items-center justify-center rounded-field border border-line bg-input active:opacity-80"
-              >
-                <SlidersIcon size={18} color={color.ink} />
-              </Pressable>
-            </View>
+            <SearchBar
+              placeholder="O que você está procurando?"
+              trailing={{
+                icon: <SlidersIcon size={18} color={color.ink} />,
+                onPress: () => {},
+                accessibilityLabel: 'Filtros de busca',
+              }}
+            />
 
             {/* CTA anunciar */}
             <Pressable
