@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import { fruitArt } from '@/components/fruits';
-import { BagIcon, HeartIcon, MapPinIcon, TagIcon } from '@/components/icons';
+import { HandHeartIcon, HeartIcon, MapPinIcon, TagIcon } from '@/components/icons';
 import type { Listing } from '@/data/mockListings';
 import { color } from '@/theme/tokens';
 
@@ -38,15 +38,19 @@ function ExploreCardBase({
       >
         <Art />
 
-        {/* Badge modalidade / preço */}
+        {/* Badge: "Doação" ou o preço por kg */}
         <View
           className={`absolute left-3 top-3 flex-row items-center gap-1.5 rounded-full px-3 py-1.5 ${
             isDoacao ? 'bg-primary' : 'bg-accent'
           }`}
         >
-          {isDoacao ? <BagIcon size={13} /> : <TagIcon size={13} />}
+          {isDoacao ? (
+            <HandHeartIcon size={13} color="#FFFFFF" />
+          ) : (
+            <TagIcon size={13} />
+          )}
           <Text className="text-[12px] font-bold text-white">
-            {isDoacao ? 'GRÁTIS' : listing.preco}
+            {isDoacao ? 'Doação' : listing.preco}
           </Text>
         </View>
       </Pressable>

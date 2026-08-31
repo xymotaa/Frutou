@@ -13,13 +13,15 @@ type Props = {
 export function ListingCard({ listing, onPress }: Props) {
   const Art = fruitArt[listing.fruta];
   const isDoacao = listing.modalidade === 'doacao';
-  const badgeLabel = isDoacao ? 'Doação' : 'Venda';
+  const badgeLabel = isDoacao ? 'Doação' : listing.preco;
 
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`${listing.titulo}, ${badgeLabel}, ${listing.autor}, a ${listing.distancia}`}
+      accessibilityLabel={`${listing.titulo}, ${
+        isDoacao ? 'doação' : listing.preco
+      }, ${listing.autor}, a ${listing.distancia}`}
       className="flex-1 overflow-hidden rounded-2xl border border-line bg-surface active:opacity-90"
     >
       <View className="aspect-[3/2] w-full">
@@ -29,7 +31,7 @@ export function ListingCard({ listing, onPress }: Props) {
             isDoacao ? 'bg-primary' : 'bg-accent'
           }`}
         >
-          <HandHeartIcon size={13} color="#FFFFFF" />
+          {isDoacao ? <HandHeartIcon size={13} color="#FFFFFF" /> : null}
           <Text className="text-[11px] font-semibold text-white">{badgeLabel}</Text>
         </View>
       </View>
@@ -47,11 +49,6 @@ export function ListingCard({ listing, onPress }: Props) {
             <Text className="text-[12px] text-muted">{listing.distancia}</Text>
           </View>
         </View>
-        {listing.preco ? (
-          <Text className="text-[12px] font-semibold text-accent-dark">
-            {listing.preco}
-          </Text>
-        ) : null}
       </View>
     </Pressable>
   );
