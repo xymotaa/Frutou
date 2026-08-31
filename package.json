@@ -1,0 +1,31 @@
+{
+  "name": "frutou",
+  "description": "FrutaShare — conecta quem tem excesso de frutas em casa com quem quer receber ou comprar.",
+  "license": "0BSD",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@react-navigation/native": "^7.0.14",
+    "@react-navigation/native-stack": "^7.2.0",
+    "expo": "~57.0.18",
+    "expo-status-bar": "~57.0.1",
+    "nativewind": "^4.1.23",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "babel-preset-expo": "^57.0.9",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~6.0.3"
+  },
+  "private": true
+}
