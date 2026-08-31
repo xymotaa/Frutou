@@ -37,7 +37,9 @@ function distanciaEmKm(texto: string): number {
   return normalizado.includes('km') ? valor : valor / 1000;
 }
 
-export function ExploreScreen(_props: MainTabScreenProps<'Explorar'>) {
+export function ExploreScreen({
+  navigation,
+}: MainTabScreenProps<'Explorar'>) {
   const [mode, setMode] = useState<ViewMode>('lista');
   const [favoritos, setFavoritos] = useState<Set<string>>(new Set());
   const [modalidade, setModalidade] = useState<ModalidadeFiltro>('todas');
@@ -90,6 +92,7 @@ export function ExploreScreen(_props: MainTabScreenProps<'Explorar'>) {
             listing={item}
             favorito={favoritos.has(item.id)}
             onToggleFavorito={() => toggleFavorito(item.id)}
+            onPress={() => navigation.navigate('Detalhes', { id: item.id })}
           />
         )}
         ListHeaderComponent={

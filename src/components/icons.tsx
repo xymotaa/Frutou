@@ -355,3 +355,109 @@ export function MapIcon({ size = 18, color: stroke = color.muted }: IconProps) {
     </Svg>
   );
 }
+
+export function ChevronLeftIcon({
+  size = 24,
+  color: stroke = color.ink,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="m15 5-7 7 7 7"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function BookmarkIcon({
+  size = 20,
+  color: stroke = color.muted,
+  filled,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M7 4h10a1 1 0 0 1 1 1v15l-6-3.5L6 20V5a1 1 0 0 1 1-1Z"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinejoin="round"
+        fill={filled ? stroke : 'none'}
+      />
+    </Svg>
+  );
+}
+
+export function HourglassIcon({
+  size = 18,
+  color: stroke = color.accent,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M7 4h10M7 20h10M8 4c0 5 8 5 8 8s-8 3-8 8M16 4c0 5-8 5-8 8s8 3 8 8"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function ClockIcon({
+  size = 18,
+  color: stroke = color.accent,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={12} cy={12} r={9} stroke={stroke} strokeWidth={2} />
+      <Path
+        d="M12 7v5l3.5 2"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function StarIcon({
+  size = 14,
+  color: stroke = color.accent,
+  filled = true,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="m12 3 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9 6.8 19.6l1-5.8L3.5 9.7l5.9-.9L12 3Z"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinejoin="round"
+        fill={filled ? stroke : 'none'}
+      />
+    </Svg>
+  );
+}
+
+export function WalkIcon({
+  size = 18,
+  color: stroke = color.accent,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={13} cy={4.5} r={1.8} fill={stroke} />
+      <Path
+        d="m10 21 2-6-2.5-2 1-5 3 1.5 2 3M9.5 8 6 10m6 5-3 6"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}

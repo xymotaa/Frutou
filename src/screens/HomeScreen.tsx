@@ -48,7 +48,12 @@ export function HomeScreen({ navigation }: MainTabScreenProps<'Inicio'>) {
         columnWrapperStyle={{ gap: 12, paddingHorizontal: 20 }}
         contentContainerStyle={{ paddingBottom: 24, gap: 12 }}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => <ListingCard listing={item} />}
+        renderItem={({ item }) => (
+          <ListingCard
+            listing={item}
+            onPress={() => navigation.navigate('Detalhes', { id: item.id })}
+          />
+        )}
         ListHeaderComponent={
           <View className="gap-4 px-5 pb-1 pt-4">
             <ScreenTitle title={`${saudacao}, ${USER_NAME}!`} />

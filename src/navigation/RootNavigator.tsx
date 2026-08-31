@@ -1,6 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { DetalhesScreen } from '@/screens/DetalhesScreen';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { SignUpScreen } from '@/screens/SignUpScreen';
 
@@ -19,6 +20,7 @@ export function RootNavigator() {
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
         <Stack.Screen name="Main" component={MainTabs} />
+        <Stack.Screen name="Detalhes" component={DetalhesScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
