@@ -8,6 +8,7 @@ import {
   PlusIcon,
   UserTabIcon,
 } from '@/components/icons';
+import { ExploreScreen } from '@/screens/ExploreScreen';
 import { HomeScreen } from '@/screens/HomeScreen';
 import { PlaceholderScreen } from '@/screens/PlaceholderScreen';
 import { color } from '@/theme/tokens';
@@ -46,14 +47,13 @@ export function MainTabs() {
       />
       <Tab.Screen
         name="Explorar"
+        component={ExploreScreen}
         options={{
           tabBarIcon: ({ color: c, focused }) => (
             <CompassIcon size={24} color={c} filled={focused} />
           ),
         }}
-      >
-        {() => <PlaceholderScreen title="Explorar" />}
-      </Tab.Screen>
+      />
       <Tab.Screen
         name="Anunciar"
         options={{

@@ -259,3 +259,99 @@ export function UserTabIcon({
     </Svg>
   );
 }
+
+export function HeartIcon({
+  size = 20,
+  color: stroke = color.ink,
+  filled,
+}: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 20s-7-4.35-9.5-8.5C1 8.5 2.5 5 6 5c2 0 3.5 1.5 4 2.5C10.5 6.5 12 5 14 5c3.5 0 5 3.5 3.5 6.5C19 15.65 12 20 12 20Z"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinejoin="round"
+        fill={filled ? stroke : 'none'}
+      />
+    </Svg>
+  );
+}
+
+export function MicIcon({ size = 20, color: stroke = color.muted }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 4a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V7a3 3 0 0 0-3-3Z"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M6 11a6 6 0 0 0 12 0M12 17v3"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+export function BagIcon({ size = 14, color: stroke = '#FFFFFF' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M6 8h12l-1 12H7L6 8Z"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      <Path
+        d="M9 8V6a3 3 0 0 1 6 0v2"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+export function TagIcon({ size = 14, color: stroke = '#FFFFFF' }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M4 12.5 11.5 5H19a1 1 0 0 1 1 1v7.5L12.5 21a1 1 0 0 1-1.4 0L4 13.9a1 1 0 0 1 0-1.4Z"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      <Circle cx={15.5} cy={9.5} r={1.5} fill={stroke} />
+    </Svg>
+  );
+}
+
+export function ListIcon({ size = 18, color: stroke = color.muted }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+    </Svg>
+  );
+}
+
+export function MapIcon({ size = 18, color: stroke = color.muted }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="m9 4 6 2 5-2v14l-5 2-6-2-5 2V6l5-2Zm0 0v14m6-12v14"
+        stroke={stroke}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
