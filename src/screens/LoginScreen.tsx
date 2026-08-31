@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { logo } from '@/assets';
 import { Button } from '@/components/Button';
 import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from '@/components/icons';
 import { TextField } from '@/components/TextField';
@@ -23,7 +24,10 @@ export function LoginScreen({ navigation }: RootStackScreenProps<'Login'>) {
   async function handleLogin() {
     setLoading(true);
     // TODO: integrar com authService.login quando o backend existir.
-    setTimeout(() => setLoading(false), 800);
+    setTimeout(() => {
+      setLoading(false);
+      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+    }, 800);
   }
 
   return (
@@ -39,7 +43,7 @@ export function LoginScreen({ navigation }: RootStackScreenProps<'Login'>) {
         >
           <View className="items-center pt-12 pb-14">
             <Image
-              source={require('@/assets/frutou-logo.png')}
+              source={logo}
               style={{ width: 176, height: 176 }}
               resizeMode="contain"
               accessibilityLabel="Frutou"

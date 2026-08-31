@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { logo } from '@/assets';
 import { Button } from '@/components/Button';
 import {
   EyeIcon,
@@ -57,7 +58,7 @@ export function SignUpScreen({ navigation }: RootStackScreenProps<'SignUp'>) {
     // TODO: integrar com authService.signUp quando o backend existir.
     setTimeout(() => {
       setLoading(false);
-      navigation.goBack();
+      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
     }, 800);
   }
 
@@ -74,7 +75,7 @@ export function SignUpScreen({ navigation }: RootStackScreenProps<'SignUp'>) {
         >
           <View className="items-center pt-8 pb-8">
             <Image
-              source={require('@/assets/frutou-logo.png')}
+              source={logo}
               style={{ width: 112, height: 112 }}
               resizeMode="contain"
               accessibilityLabel="Frutou"
