@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { HandHeartIcon, PlusIcon, SlidersIcon } from '@/components/icons';
@@ -33,6 +34,18 @@ export function HomeScreen({ navigation }: MainTabScreenProps<'Inicio'>) {
   const { data, loading, erro, refetch } = useFeed({ q: buscaDebounced });
   const lista = data ?? [];
   const buscando = buscaDebounced.length > 0;
+
+  // recarrega o feed ao voltar (ex.: depois de publicar um anúncio)
+  const primeiroFoco = useMemo(() => ({ pulou: false }), []);
+  useFocusEffect(
+    useCallback(() => {
+      if (!primeiroFoco.pulou) {
+        primeiroFoco.pulou = true;
+        return;
+      }
+      refetch();
+    }, [refetch, primeiroFoco]),
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>

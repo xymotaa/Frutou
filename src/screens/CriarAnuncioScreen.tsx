@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ApiError, listingsApi } from '@/api';
@@ -15,12 +16,23 @@ export function CriarAnuncioScreen({
   const perfil = usePerfil();
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  // muda a cada foco da tela → força o AnuncioForm a remontar com estado limpo
+  const [formKey, setFormKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setEnviando(false);
+      setErro(null);
+      setFormKey((k) => k + 1);
+    }, []),
+  );
 
   async function publicar(v: AnuncioValores) {
     setEnviando(true);
     setErro(null);
     try {
       await listingsApi.create(valoresParaInput(v), fotosParaUpload(v.fotos));
+      setEnviando(false);
       navigation.navigate('Inicio');
     } catch (e) {
       setErro(
@@ -41,6 +53,7 @@ export function CriarAnuncioScreen({
       />
 
       <AnuncioForm
+        key={formKey}
         header={
           <ScreenTitle
             title="Anunciar fruta"

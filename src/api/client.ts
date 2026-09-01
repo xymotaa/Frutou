@@ -44,20 +44,48 @@ async function authHeaders(): Promise<Record<string, string>> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+/**
+ * `fetch` com timeout via AbortController. Sem isto, uma conexão pendurada
+ * (rede caiu no meio, backend travou) deixa a promessa presa "para sempre" e
+ * a UI fica em loading eterno.
+ */
+async function fetchComTimeout(
+  url: string,
+  init: RequestInit,
+  ms: number,
+): Promise<Response> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal });
+  } catch (e) {
+    if (e instanceof Error && e.name === 'AbortError') {
+      throw new ApiError(0, 'Tempo esgotado. Verifique sua conexão.', 'timeout');
+    }
+    throw new ApiError(0, 'Falha de conexão. Verifique sua rede.', 'network');
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 /** GET/DELETE/POST/PATCH com corpo JSON. `path` começa com "/". */
 async function request<T>(
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
   path: string,
   body?: unknown,
 ): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method,
-    headers: {
-      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      ...(await authHeaders()),
+  const res = await fetchComTimeout(
+    `${BASE_URL}${path}`,
+    {
+      method,
+      headers: {
+        ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...(await authHeaders()),
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
     },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+    15000,
+  );
   return parse<T>(res);
 }
 
@@ -96,11 +124,15 @@ async function upload<T>(
     }
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method,
-    headers: { ...(await authHeaders()) }, // sem Content-Type: o fetch define o boundary
-    body: form,
-  });
+  const res = await fetchComTimeout(
+    `${BASE_URL}${path}`,
+    {
+      method,
+      headers: { ...(await authHeaders()) }, // sem Content-Type: o fetch define o boundary
+      body: form,
+    },
+    30000, // upload de fotos pode demorar mais
+  );
   return parse<T>(res);
 }
 
