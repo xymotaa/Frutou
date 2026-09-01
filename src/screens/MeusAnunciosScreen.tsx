@@ -1,7 +1,15 @@
-import { useMemo, useState } from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  Text,
+  View,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ApiError, listingsApi, type ListingListItem } from '@/api';
 import {
   BanIcon,
   ChevronLeftIcon,
@@ -11,19 +19,59 @@ import {
   TagIcon,
 } from '@/components/icons';
 import { ListingImage } from '@/components/ListingImage';
-import { mockMeusAnuncios, type StatusAnuncio } from '@/data/mockMeusAnuncios';
 import type { RootStackScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
+
+type StatusAnuncio = 'ativo' | 'encerrado';
 
 export function MeusAnunciosScreen({
   navigation,
 }: RootStackScreenProps<'MeusAnuncios'>) {
   const [aba, setAba] = useState<StatusAnuncio>('ativo');
+  const [lista, setLista] = useState<ListingListItem[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
+  const [agindo, setAgindo] = useState<string | null>(null);
 
-  const lista = useMemo(
-    () => mockMeusAnuncios.filter((a) => a.status === aba),
-    [aba],
+  const carregar = useCallback(() => {
+    setLoading(true);
+    setErro(null);
+    listingsApi
+      .mine(aba)
+      .then(setLista)
+      .catch((e) =>
+        setErro(
+          e instanceof ApiError
+            ? e.message
+            : 'Não foi possível carregar seus anúncios.',
+        ),
+      )
+      .finally(() => setLoading(false));
+  }, [aba]);
+
+  useEffect(() => {
+    carregar();
+  }, [carregar]);
+
+  // recarrega ao voltar de Criar/Editar
+  useFocusEffect(
+    useCallback(() => {
+      carregar();
+    }, [carregar]),
   );
+
+  async function alternarStatus(item: ListingListItem) {
+    setAgindo(item.id);
+    try {
+      if (item.status === 'encerrado') await listingsApi.reabrir(item.id);
+      else await listingsApi.encerrar(item.id);
+      carregar();
+    } catch {
+      // silencioso; o item continua como está
+    } finally {
+      setAgindo(null);
+    }
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -47,7 +95,7 @@ export function MeusAnunciosScreen({
       </View>
 
       <FlatList
-        data={lista}
+        data={lista ?? []}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ padding: 20, paddingBottom: 24, gap: 16 }}
         showsVerticalScrollIndicator={false}
@@ -81,7 +129,7 @@ export function MeusAnunciosScreen({
           return (
             <View className="overflow-hidden rounded-2xl border border-line bg-surface">
               <View className="relative aspect-[16/9] w-full">
-                <ListingImage fotos={null} className="h-full w-full" />
+                <ListingImage fotos={item.fotos} className="h-full w-full" />
                 {encerrado ? (
                   <View className="absolute inset-0 items-center justify-center bg-ink-scrim">
                     <Text className="text-[13px] font-bold uppercase tracking-wide text-white">
@@ -100,7 +148,7 @@ export function MeusAnunciosScreen({
                     <TagIcon size={13} />
                   )}
                   <Text className="text-[12px] font-bold text-white">
-                    {isDoacao ? 'Doação' : item.preco}
+                    {isDoacao ? 'Doação' : (item.precoTexto ?? 'À venda')}
                   </Text>
                 </View>
               </View>
@@ -109,13 +157,18 @@ export function MeusAnunciosScreen({
                 <Text className="text-[16px] font-bold text-ink">
                   {item.titulo}
                 </Text>
-                <Text className="text-[13px] leading-5 text-muted" numberOfLines={2}>
-                  {item.descricao}
-                </Text>
+                {item.detalhe ? (
+                  <Text
+                    className="text-[13px] leading-5 text-muted"
+                    numberOfLines={2}
+                  >
+                    {item.detalhe}
+                  </Text>
+                ) : null}
                 <View className="flex-row items-center gap-1">
                   <MapPinIcon size={13} color={color.muted} />
                   <Text className="text-[12px] text-muted">
-                    {item.bairro}, a {item.distancia}
+                    Publicado {item.publicadoHa}
                   </Text>
                 </View>
 
@@ -134,18 +187,28 @@ export function MeusAnunciosScreen({
                     </Text>
                   </Pressable>
                   <Pressable
+                    onPress={() => alternarStatus(item)}
+                    disabled={agindo === item.id}
                     accessibilityRole="button"
                     accessibilityLabel={
                       encerrado
                         ? `Reativar ${item.titulo}`
                         : `Encerrar ${item.titulo}`
                     }
-                    className="flex-1 flex-row items-center justify-center gap-1.5 rounded-full bg-input py-2.5 active:opacity-80"
+                    className={`flex-1 flex-row items-center justify-center gap-1.5 rounded-full bg-input py-2.5 active:opacity-80 ${
+                      agindo === item.id ? 'opacity-50' : ''
+                    }`}
                   >
-                    <BanIcon size={15} color={color.muted} />
-                    <Text className="text-[13px] font-semibold text-muted">
-                      {encerrado ? 'Reativar' : 'Encerrar'}
-                    </Text>
+                    {agindo === item.id ? (
+                      <ActivityIndicator size="small" color={color.muted} />
+                    ) : (
+                      <>
+                        <BanIcon size={15} color={color.muted} />
+                        <Text className="text-[13px] font-semibold text-muted">
+                          {encerrado ? 'Reativar' : 'Encerrar'}
+                        </Text>
+                      </>
+                    )}
                   </Pressable>
                 </View>
               </View>
@@ -153,14 +216,33 @@ export function MeusAnunciosScreen({
           );
         }}
         ListEmptyComponent={
-          <View className="items-center gap-2 px-8 pt-12">
-            <HandHeartIcon size={32} color={color.line} />
-            <Text className="text-center text-[14px] text-muted">
-              {aba === 'ativo'
-                ? 'Você não tem anúncios ativos. Que tal publicar um?'
-                : 'Nenhum anúncio encerrado por aqui.'}
-            </Text>
-          </View>
+          loading ? (
+            <View className="items-center pt-16">
+              <ActivityIndicator size="large" color={color.primary} />
+            </View>
+          ) : erro ? (
+            <View className="items-center gap-3 px-8 pt-12">
+              <Text className="text-center text-[14px] text-muted">{erro}</Text>
+              <Pressable
+                onPress={carregar}
+                accessibilityRole="button"
+                className="rounded-full bg-primary px-5 py-2.5 active:opacity-80"
+              >
+                <Text className="text-[13px] font-semibold text-white">
+                  Tentar de novo
+                </Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View className="items-center gap-2 px-8 pt-12">
+              <HandHeartIcon size={32} color={color.line} />
+              <Text className="text-center text-[14px] text-muted">
+                {aba === 'ativo'
+                  ? 'Você não tem anúncios ativos. Que tal publicar um?'
+                  : 'Nenhum anúncio encerrado por aqui.'}
+              </Text>
+            </View>
+          )
         }
       />
     </SafeAreaView>

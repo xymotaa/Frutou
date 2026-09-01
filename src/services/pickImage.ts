@@ -20,6 +20,25 @@ export async function pickProfilePhoto(): Promise<string | null> {
   return result.assets[0].uri;
 }
 
+/**
+ * Abre a galeria com seleção múltipla para as fotos de um anúncio.
+ * Retorna as URIs locais escolhidas (no máximo `max`); `[]` se cancelar / negar.
+ */
+export async function pickListingPhotos(max = 5): Promise<string[]> {
+  const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (!perm.granted) return [];
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ['images'],
+    allowsMultipleSelection: true,
+    selectionLimit: max,
+    quality: 0.7,
+  });
+
+  if (result.canceled || !result.assets?.length) return [];
+  return result.assets.slice(0, max).map((a) => a.uri);
+}
+
 type AcaoFoto =
   | { tipo: 'trocar'; uri: string }
   | { tipo: 'remover' }
