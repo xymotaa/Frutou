@@ -1,26 +1,29 @@
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import type { ConversationListItem } from '@/api';
 import { Avatar } from '@/components/Avatar';
 import { GiftIcon, HandHeartIcon, TagIcon } from '@/components/icons';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { SearchBar } from '@/components/SearchBar';
-import { type Conversa, useConversas } from '@/data/mockConversas';
+import { resolveMediaUrl } from '@/lib/media';
+import { useConversas } from '@/state/chat';
 import { usePerfil } from '@/state/perfil';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
-function ultimaMensagem(c: Conversa): string {
-  const m = c.mensagens[c.mensagens.length - 1];
+function previaMensagem(c: ConversationListItem): string {
+  const m = c.ultimaMensagem;
   if (!m) return '';
   return m.de === 'eu' ? `Você: ${m.texto}` : m.texto;
 }
 
 export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>) {
   const perfil = usePerfil();
-  const conversas = useConversas();
+  const { data, loading, erro, refetch } = useConversas();
+  const conversas = data ?? [];
   const naoLidas = conversas.filter((c) => c.naoLida).length;
   const [busca, setBusca] = useState('');
 
@@ -29,9 +32,9 @@ export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>)
     if (!q) return conversas;
     return conversas.filter(
       (c) =>
-        c.nome.toLowerCase().includes(q) ||
+        c.parceiro.nome.toLowerCase().includes(q) ||
         c.assunto.toLowerCase().includes(q) ||
-        ultimaMensagem(c).toLowerCase().includes(q),
+        previaMensagem(c).toLowerCase().includes(q),
     );
   }, [busca, conversas]);
 
@@ -75,12 +78,39 @@ export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>)
           </View>
         }
         ListEmptyComponent={
-          <View className="items-center gap-2 px-8 pt-12">
-            <HandHeartIcon size={32} color={color.line} />
-            <Text className="text-center text-[14px] text-muted">
-              Nenhuma conversa encontrada para “{busca.trim()}”.
-            </Text>
-          </View>
+          loading ? (
+            <View className="items-center pt-16">
+              <ActivityIndicator size="large" color={color.primary} />
+            </View>
+          ) : erro ? (
+            <View className="items-center gap-3 px-8 pt-12">
+              <Text className="text-center text-[14px] text-muted">{erro}</Text>
+              <Pressable
+                onPress={refetch}
+                accessibilityRole="button"
+                className="rounded-full bg-primary px-5 py-2.5 active:opacity-80"
+              >
+                <Text className="text-[13px] font-semibold text-white">
+                  Tentar de novo
+                </Text>
+              </Pressable>
+            </View>
+          ) : buscando ? (
+            <View className="items-center gap-2 px-8 pt-12">
+              <HandHeartIcon size={32} color={color.line} />
+              <Text className="text-center text-[14px] text-muted">
+                Nenhuma conversa encontrada para “{busca.trim()}”.
+              </Text>
+            </View>
+          ) : (
+            <View className="items-center gap-2 px-8 pt-12">
+              <HandHeartIcon size={32} color={color.line} />
+              <Text className="text-center text-[14px] text-muted">
+                Você ainda não tem conversas. Demonstre interesse num anúncio
+                para começar.
+              </Text>
+            </View>
+          )
         }
         renderItem={({ item }) => {
           const isDoacao = item.modalidade === 'doacao';
@@ -88,11 +118,15 @@ export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>)
             <Pressable
               onPress={() => navigation.navigate('Chat', { id: item.id })}
               accessibilityRole="button"
-              accessibilityLabel={`Abrir conversa com ${item.nome} sobre ${item.assunto}`}
+              accessibilityLabel={`Abrir conversa com ${item.parceiro.nome} sobre ${item.assunto}`}
               className="flex-row items-center gap-3 px-5 py-3 active:bg-input"
             >
               <View className="relative">
-                <Avatar initial={item.nome.charAt(0)} size={48} />
+                <Avatar
+                  initial={item.parceiro.nome.charAt(0)}
+                  uri={resolveMediaUrl(item.parceiro.fotoUrl)}
+                  size={48}
+                />
                 <View
                   className={`absolute -bottom-0.5 -right-0.5 h-5 w-5 items-center justify-center rounded-full border-2 border-background ${
                     isDoacao ? 'bg-primary' : 'bg-accent'
@@ -109,7 +143,7 @@ export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>)
               <View className="flex-1 gap-0.5">
                 <View className="flex-row items-center justify-between">
                   <Text className="text-[15px] font-semibold text-ink">
-                    {item.nome}
+                    {item.parceiro.nome}
                   </Text>
                   <Text
                     className={`text-[12px] ${
@@ -127,7 +161,7 @@ export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>)
                   }`}
                   numberOfLines={1}
                 >
-                  {ultimaMensagem(item)}
+                  {previaMensagem(item) || 'Conversa iniciada'}
                 </Text>
                 <Text className="text-[11px] uppercase tracking-wide text-muted">
                   {item.assunto}

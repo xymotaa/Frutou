@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -10,24 +11,42 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import type { ChatMessage } from '@/api';
 import { Avatar } from '@/components/Avatar';
 import { ChevronLeftIcon } from '@/components/icons';
-import {
-  enviarMensagem,
-  useConversa,
-  type Mensagem,
-} from '@/data/mockConversas';
+import { resolveMediaUrl } from '@/lib/media';
+import { useConversa } from '@/state/chat';
 import type { RootStackScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
 export function ChatScreen({ route, navigation }: RootStackScreenProps<'Chat'>) {
-  const conversa = useConversa(route.params.id);
+  const { id } = route.params;
+  const { data: conversa, loading, erro, enviando, enviar } = useConversa(id);
   const [texto, setTexto] = useState('');
 
   const dados = useMemo(
     () => (conversa ? [...conversa.mensagens].reverse() : []),
     [conversa],
   );
+
+  if (loading && !conversa) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-background">
+        <ActivityIndicator size="large" color={color.primary} />
+      </SafeAreaView>
+    );
+  }
+
+  if (erro && !conversa) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-8">
+        <Text className="text-center text-[15px] text-muted">{erro}</Text>
+        <Pressable onPress={() => navigation.goBack()} className="mt-4">
+          <Text className="text-[14px] font-semibold text-primary">Voltar</Text>
+        </Pressable>
+      </SafeAreaView>
+    );
+  }
 
   if (!conversa) {
     return (
@@ -40,11 +59,11 @@ export function ChatScreen({ route, navigation }: RootStackScreenProps<'Chat'>) 
     );
   }
 
-  function enviar() {
+  async function handleEnviar() {
     const t = texto.trim();
     if (!t) return;
-    enviarMensagem(route.params.id, t);
     setTexto('');
+    await enviar(t);
   }
 
   return (
@@ -60,13 +79,17 @@ export function ChatScreen({ route, navigation }: RootStackScreenProps<'Chat'>) 
         >
           <ChevronLeftIcon size={22} color={color.ink} />
         </Pressable>
-        <Avatar initial={conversa.nome.charAt(0)} size={36} />
+        <Avatar
+          initial={conversa.parceiro.nome.charAt(0)}
+          uri={resolveMediaUrl(conversa.parceiro.fotoUrl)}
+          size={36}
+        />
         <View className="flex-1">
           <Text
             className="text-[16px] font-bold text-ink"
             accessibilityRole="header"
           >
-            {conversa.nome}
+            {conversa.parceiro.nome}
           </Text>
           <Text className="text-[12px] text-muted" numberOfLines={1}>
             {conversa.assunto}
@@ -81,7 +104,7 @@ export function ChatScreen({ route, navigation }: RootStackScreenProps<'Chat'>) 
       >
         <FlatList
           data={dados}
-          keyExtractor={(m: Mensagem) => m.id}
+          keyExtractor={(m: ChatMessage) => m.id}
           inverted
           contentContainerStyle={{ padding: 16, gap: 8 }}
           showsVerticalScrollIndicator={false}
@@ -130,15 +153,19 @@ export function ChatScreen({ route, navigation }: RootStackScreenProps<'Chat'>) 
             />
           </View>
           <Pressable
-            onPress={enviar}
-            disabled={!texto.trim()}
+            onPress={handleEnviar}
+            disabled={!texto.trim() || enviando}
             accessibilityRole="button"
             accessibilityLabel="Enviar mensagem"
-            className={`h-10 items-center justify-center rounded-full px-4 active:opacity-80 ${
-              texto.trim() ? 'bg-primary' : 'bg-line'
+            className={`h-10 min-w-[72px] items-center justify-center rounded-full px-4 active:opacity-80 ${
+              texto.trim() && !enviando ? 'bg-primary' : 'bg-line'
             }`}
           >
-            <Text className="text-[14px] font-semibold text-white">Enviar</Text>
+            {enviando ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <Text className="text-[14px] font-semibold text-white">Enviar</Text>
+            )}
           </Pressable>
         </View>
       </KeyboardAvoidingView>

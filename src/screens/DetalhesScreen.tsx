@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { listingsApi } from '@/api';
+import { ApiError, listingsApi } from '@/api';
 import { Avatar } from '@/components/Avatar';
 import { BottomCTA } from '@/components/BottomCTA';
 import {
@@ -18,8 +18,8 @@ import {
   WalkIcon,
 } from '@/components/icons';
 import { ListingImage } from '@/components/ListingImage';
-import { iniciarConversa, textoInteresse } from '@/data/mockConversas';
 import { resolveMediaUrl } from '@/lib/media';
+import { iniciarConversa } from '@/state/chat';
 import { useListing } from '@/state/feed';
 import type { RootStackScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
@@ -33,6 +33,8 @@ export function DetalhesScreen({
   const { data: listing, loading, erro, refetch } = useListing(route.params.id);
   const [salvo, setSalvo] = useState(false);
   const [salvoTocado, setSalvoTocado] = useState(false);
+  const [abrindoChat, setAbrindoChat] = useState(false);
+  const [erroChat, setErroChat] = useState<string | null>(null);
 
   // sincroniza o estado local com o valor da API na 1ª carga
   useEffect(() => {
@@ -81,17 +83,22 @@ export function DetalhesScreen({
     req.catch(() => setSalvo(!proximo));
   }
 
-  function abrirChat() {
-    const assunto = isDoacao
-      ? `${listing!.titulo} · Doação`
-      : `${listing!.titulo} · ${listing!.precoTexto ?? 'à venda'}`;
-    const id = iniciarConversa(
-      listing!.autor.nome,
-      assunto,
-      listing!.modalidade,
-      textoInteresse(listing!.titulo, isDoacao),
-    );
-    navigation.navigate('Chat', { id });
+  async function abrirChat() {
+    if (abrindoChat) return;
+    setAbrindoChat(true);
+    setErroChat(null);
+    try {
+      const id = await iniciarConversa(listing!.id);
+      navigation.navigate('Chat', { id });
+    } catch (e) {
+      setErroChat(
+        e instanceof ApiError
+          ? e.message
+          : 'Não foi possível abrir a conversa. Tente de novo.',
+      );
+    } finally {
+      setAbrindoChat(false);
+    }
   }
 
   const metas: MetaRow[] = [
@@ -254,10 +261,28 @@ export function DetalhesScreen({
       </ScrollView>
 
       {/* CTA fixo */}
+      {erroChat ? (
+        <Text className="bg-surface px-5 pt-2 text-center text-[12px] text-danger">
+          {erroChat}
+        </Text>
+      ) : null}
       <BottomCTA
-        label={isDoacao ? 'Tenho interesse' : 'Comprar'}
+        label={
+          abrindoChat
+            ? 'Abrindo…'
+            : isDoacao
+              ? 'Tenho interesse'
+              : 'Comprar'
+        }
         onPress={abrirChat}
-        icon={<HandHeartIcon size={18} color="#FFFFFF" />}
+        disabled={abrindoChat}
+        icon={
+          abrindoChat ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <HandHeartIcon size={18} color="#FFFFFF" />
+          )
+        }
         bgClassName={isDoacao ? 'bg-primary' : 'bg-accent'}
         accessibilityLabel="Falar com quem anunciou"
       />

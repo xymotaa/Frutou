@@ -8,7 +8,7 @@ import { HandHeartIcon, MicIcon } from '@/components/icons';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { SearchBar } from '@/components/SearchBar';
-import { iniciarConversa, textoInteresse } from '@/data/mockConversas';
+import { iniciarConversa } from '@/state/chat';
 import { alternarFavorito, useFeed } from '@/state/feed';
 import { usePerfil } from '@/state/perfil';
 import type { MainTabScreenProps } from '@/navigation/types';
@@ -75,21 +75,22 @@ export function ExploreScreen({
     [favOverride],
   );
 
+  const [abrindoChat, setAbrindoChat] = useState<string | null>(null);
+
   const abrirChat = useCallback(
-    (l: ListingListItem) => {
-      const doacao = l.modalidade === 'doacao';
-      const assunto = doacao
-        ? `${l.titulo} · Doação`
-        : `${l.titulo} · ${l.precoTexto ?? 'à venda'}`;
-      const id = iniciarConversa(
-        l.autor.nome,
-        assunto,
-        l.modalidade,
-        textoInteresse(l.titulo, doacao),
-      );
-      navigation.navigate('Chat', { id });
+    async (l: ListingListItem) => {
+      if (abrindoChat) return;
+      setAbrindoChat(l.id);
+      try {
+        const id = await iniciarConversa(l.id);
+        navigation.navigate('Chat', { id });
+      } catch {
+        // silencioso; o usuário pode tentar de novo
+      } finally {
+        setAbrindoChat(null);
+      }
     },
-    [navigation],
+    [navigation, abrindoChat],
   );
 
   return (
