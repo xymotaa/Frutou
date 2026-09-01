@@ -18,6 +18,7 @@ export type RootStackParamList = {
   SignUp: undefined;
   Main: NavigatorScreenParams<MainTabParamList> | undefined;
   Detalhes: { id: string };
+  PerfilPublico: { id: string };
   MeusAnuncios: undefined;
   EditarAnuncio: { id: string };
   Avaliacao: { conversationId: string; nomeParceiro: string };

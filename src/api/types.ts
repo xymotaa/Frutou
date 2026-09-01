@@ -96,6 +96,17 @@ export type HistoricoItem = {
   minhaNota: number; // 0 = ainda não avaliei
 };
 
+/* ---- avaliação pública (perfil de outro usuário) ---- */
+
+export type ReviewPublic = {
+  id: string;
+  nota: number; // 1..5
+  comentario: string | null;
+  data: string; // fmt ("28 ago 2026")
+  autor: { id: string; nome: string; fotoUrl: string | null };
+  listingTitulo: string;
+};
+
 /* ---- geocoding (Fase 6) ---- */
 
 export type GeoResult = {

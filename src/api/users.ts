@@ -1,5 +1,10 @@
 import { api, type UploadFile } from './client';
-import type { UserMe, UserPublic } from './types';
+import type {
+  ListingListItem,
+  ReviewPublic,
+  UserMe,
+  UserPublic,
+} from './types';
 
 export type PerfilPatch = {
   nome?: string;
@@ -21,4 +26,11 @@ export const usersApi = {
   deletePhoto: () => api.del<void>('/users/me/photo'),
 
   byId: (id: string) => api.get<UserPublic>(`/users/${id}`),
+
+  /** Anúncios ativos de um usuário (perfil público). */
+  listings: (id: string) =>
+    api.get<ListingListItem[]>(`/users/${id}/listings`),
+
+  /** Avaliações recebidas por um usuário. */
+  reviews: (id: string) => api.get<ReviewPublic[]>(`/users/${id}/reviews`),
 };

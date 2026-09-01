@@ -222,23 +222,32 @@ export function DetalhesScreen({
 
           {/* Anunciante */}
           <View className="mt-5 flex-row items-center gap-3 rounded-2xl bg-input p-3">
-            <Avatar
-              initial={listing.autor.nome.charAt(0)}
-              uri={autorFoto}
-              size={48}
-            />
-            <View className="flex-1">
-              <Text className="text-[15px] font-semibold text-ink">
-                {listing.autor.nome}
-              </Text>
-              <View className="mt-0.5 flex-row items-center gap-1">
-                <StarIcon size={13} />
-                <Text className="text-[13px] text-muted">
-                  {listing.autor.nota.toFixed(1).replace('.', ',')} (
-                  {listing.autor.trocas} trocas)
+            <Pressable
+              onPress={() =>
+                navigation.navigate('PerfilPublico', { id: listing.autor.id })
+              }
+              accessibilityRole="button"
+              accessibilityLabel={`Ver o perfil de ${listing.autor.nome}`}
+              className="flex-1 flex-row items-center gap-3 active:opacity-80"
+            >
+              <Avatar
+                initial={listing.autor.nome.charAt(0)}
+                uri={autorFoto}
+                size={48}
+              />
+              <View className="flex-1">
+                <Text className="text-[15px] font-semibold text-ink">
+                  {listing.autor.nome}
                 </Text>
+                <View className="mt-0.5 flex-row items-center gap-1">
+                  <StarIcon size={13} />
+                  <Text className="text-[13px] text-muted">
+                    {listing.autor.nota.toFixed(1).replace('.', ',')} (
+                    {listing.autor.trocas} trocas)
+                  </Text>
+                </View>
               </View>
-            </View>
+            </Pressable>
             <Pressable
               onPress={abrirChat}
               accessibilityRole="button"

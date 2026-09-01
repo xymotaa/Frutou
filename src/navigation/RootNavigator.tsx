@@ -10,6 +10,7 @@ import { EditarPerfilScreen } from '@/screens/EditarPerfilScreen';
 import { HistoricoScreen } from '@/screens/HistoricoScreen';
 import { LoginScreen } from '@/screens/LoginScreen';
 import { MeusAnunciosScreen } from '@/screens/MeusAnunciosScreen';
+import { PerfilPublicoScreen } from '@/screens/PerfilPublicoScreen';
 import { SignUpScreen } from '@/screens/SignUpScreen';
 import { useSession } from '@/state/session';
 
@@ -39,6 +40,10 @@ export function RootNavigator() {
               options={{ animation: 'fade' }}
             />
             <Stack.Screen name="Detalhes" component={DetalhesScreen} />
+            <Stack.Screen
+              name="PerfilPublico"
+              component={PerfilPublicoScreen}
+            />
             <Stack.Screen name="MeusAnuncios" component={MeusAnunciosScreen} />
             <Stack.Screen name="EditarAnuncio" component={EditarAnuncioScreen} />
             <Stack.Screen name="Avaliacao" component={AvaliacaoScreen} />

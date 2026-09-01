@@ -82,22 +82,31 @@ export function ChatScreen({ route, navigation }: RootStackScreenProps<'Chat'>) 
         >
           <ChevronLeftIcon size={22} color={color.ink} />
         </Pressable>
-        <Avatar
-          initial={conversa.parceiro.nome.charAt(0)}
-          uri={resolveMediaUrl(conversa.parceiro.fotoUrl)}
-          size={36}
-        />
-        <View className="flex-1">
-          <Text
-            className="text-[16px] font-bold text-ink"
-            accessibilityRole="header"
-          >
-            {conversa.parceiro.nome}
-          </Text>
-          <Text className="text-[12px] text-muted" numberOfLines={1}>
-            {conversa.assunto}
-          </Text>
-        </View>
+        <Pressable
+          onPress={() =>
+            navigation.navigate('PerfilPublico', { id: conversa.parceiro.id })
+          }
+          accessibilityRole="button"
+          accessibilityLabel={`Ver o perfil de ${conversa.parceiro.nome}`}
+          className="flex-1 flex-row items-center gap-3 active:opacity-80"
+        >
+          <Avatar
+            initial={conversa.parceiro.nome.charAt(0)}
+            uri={resolveMediaUrl(conversa.parceiro.fotoUrl)}
+            size={36}
+          />
+          <View className="flex-1">
+            <Text
+              className="text-[16px] font-bold text-ink"
+              accessibilityRole="header"
+            >
+              {conversa.parceiro.nome}
+            </Text>
+            <Text className="text-[12px] text-muted" numberOfLines={1}>
+              {conversa.assunto}
+            </Text>
+          </View>
+        </Pressable>
       </View>
 
       {/* Faixa "Ver anúncio" */}
