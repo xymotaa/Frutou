@@ -19,10 +19,12 @@ export type RootStackParamList = {
   Main: NavigatorScreenParams<MainTabParamList> | undefined;
   Detalhes: { id: string };
   MeusAnuncios: undefined;
+  EditarAnuncio: { id: string };
   Avaliacao: { nomeParceiro: string };
   EditarPerfil: undefined;
   Configuracoes: undefined;
   Historico: undefined;
+  Chat: { id: string };
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

@@ -8,7 +8,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { SearchBar } from '@/components/SearchBar';
 import { mockListings } from '@/data/mockListings';
-import { usuarioAtual } from '@/data/mockPerfil';
+import { usePerfil } from '@/data/mockPerfil';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
@@ -20,6 +20,7 @@ function greeting(date = new Date()): string {
 }
 
 export function HomeScreen({ navigation }: MainTabScreenProps<'Inicio'>) {
+  const perfil = usePerfil();
   const saudacao = useMemo(() => greeting(), []);
   const [busca, setBusca] = useState('');
 
@@ -39,7 +40,8 @@ export function HomeScreen({ navigation }: MainTabScreenProps<'Inicio'>) {
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScreenHeader
-        avatarInitial={usuarioAtual.inicial}
+        avatarInitial={perfil.inicial}
+        avatarUri={perfil.fotoUri}
         onPressAvatar={() => navigation.navigate('Usuario')}
       />
 
@@ -59,7 +61,7 @@ export function HomeScreen({ navigation }: MainTabScreenProps<'Inicio'>) {
         )}
         ListHeaderComponent={
           <View className="gap-4 px-5 pb-1 pt-4">
-            <ScreenTitle title={`${saudacao}, ${usuarioAtual.primeiroNome}!`} />
+            <ScreenTitle title={`${saudacao}, ${perfil.primeiroNome}!`} />
 
             <SearchBar
               placeholder="O que você está procurando?"

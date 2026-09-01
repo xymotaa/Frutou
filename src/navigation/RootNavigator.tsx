@@ -2,8 +2,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import { AvaliacaoScreen } from '@/screens/AvaliacaoScreen';
+import { ChatScreen } from '@/screens/ChatScreen';
 import { ConfiguracoesScreen } from '@/screens/ConfiguracoesScreen';
 import { DetalhesScreen } from '@/screens/DetalhesScreen';
+import { EditarAnuncioScreen } from '@/screens/EditarAnuncioScreen';
 import { EditarPerfilScreen } from '@/screens/EditarPerfilScreen';
 import { HistoricoScreen } from '@/screens/HistoricoScreen';
 import { LoginScreen } from '@/screens/LoginScreen';
@@ -39,10 +41,12 @@ export function RootNavigator() {
         />
         <Stack.Screen name="Detalhes" component={DetalhesScreen} />
         <Stack.Screen name="MeusAnuncios" component={MeusAnunciosScreen} />
+        <Stack.Screen name="EditarAnuncio" component={EditarAnuncioScreen} />
         <Stack.Screen name="Avaliacao" component={AvaliacaoScreen} />
         <Stack.Screen name="EditarPerfil" component={EditarPerfilScreen} />
         <Stack.Screen name="Configuracoes" component={ConfiguracoesScreen} />
         <Stack.Screen name="Historico" component={HistoricoScreen} />
+        <Stack.Screen name="Chat" component={ChatScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

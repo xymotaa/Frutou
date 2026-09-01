@@ -14,6 +14,10 @@ export type MeuAnuncio = {
   fruta: FruitKey;
 };
 
+export function getMeuAnuncio(id: string): MeuAnuncio | undefined {
+  return mockMeusAnuncios.find((a) => a.id === id);
+}
+
 /** Dados de exemplo. Substituir por listingsService.mine() com o backend. */
 export const mockMeusAnuncios: MeuAnuncio[] = [
   {

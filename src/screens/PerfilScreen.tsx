@@ -1,6 +1,7 @@
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Avatar } from '@/components/Avatar';
 import {
   ArchiveIcon,
   ChevronRightIcon,
@@ -13,12 +14,12 @@ import {
 } from '@/components/icons';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { StarRating } from '@/components/StarRating';
-import { usuarioAtual } from '@/data/mockPerfil';
+import { usePerfil } from '@/data/mockPerfil';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
 export function PerfilScreen({ navigation }: MainTabScreenProps<'Usuario'>) {
-  const p = usuarioAtual;
+  const p = usePerfil();
 
   const itens = [
     {
@@ -40,31 +41,30 @@ export function PerfilScreen({ navigation }: MainTabScreenProps<'Usuario'>) {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
-      <ScreenHeader avatarInitial={p.nome.charAt(0)} />
+      <ScreenHeader avatarInitial={p.inicial} avatarUri={p.fotoUri} />
 
       <ScrollView
         contentContainerStyle={{ padding: 20, paddingBottom: 24, gap: 20 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Identidade */}
-        <View className="items-center gap-2 pt-2">
-          <View className="h-24 w-24">
-            <View className="h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-input">
-              <Text className="text-[32px] font-bold text-primary">
-                {p.nome.charAt(0)}
-              </Text>
-            </View>
-            <Pressable
-              onPress={() => navigation.navigate('EditarPerfil')}
-              accessibilityRole="button"
-              accessibilityLabel="Editar perfil"
-              className="absolute bottom-0 right-0 h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-accent active:opacity-80"
-            >
+        <View className="items-center pt-2">
+          <Pressable
+            onPress={() => navigation.navigate('EditarPerfil')}
+            accessibilityRole="button"
+            accessibilityLabel="Editar perfil"
+            className="h-24 w-24 active:opacity-90"
+          >
+            <Avatar initial={p.inicial} uri={p.fotoUri} size={96} />
+            <View className="absolute bottom-0 right-0 h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-accent">
               <PencilIcon size={14} color="#FFFFFF" />
-            </Pressable>
-          </View>
-          <Text className="text-[22px] font-bold text-ink">{p.nome}</Text>
-          <View className="flex-row items-center gap-2">
+            </View>
+          </Pressable>
+
+          <Text className="mt-4 text-center text-[22px] font-bold text-ink">
+            {p.nome}
+          </Text>
+          <View className="mt-1 flex-row items-center gap-2">
             <StarRating value={p.nota} size={16} />
             <Text className="text-[13px] text-muted">
               ({p.nota.toFixed(1).replace('.', ',')})
@@ -110,22 +110,24 @@ export function PerfilScreen({ navigation }: MainTabScreenProps<'Usuario'>) {
         </View>
 
         {/* Sair */}
-        <Pressable
-          onPress={() =>
-            navigation.getParent()?.reset({
-              index: 0,
-              routes: [{ name: 'Login' }],
-            })
-          }
-          accessibilityRole="button"
-          accessibilityLabel="Sair da conta"
-          className="mt-1 h-14 flex-row items-center justify-center gap-2 rounded-field bg-danger-soft active:opacity-80"
-        >
-          <LogOutIcon size={18} color={color.danger} />
-          <Text className="text-[15px] font-semibold text-danger">
-            Sair da conta
-          </Text>
-        </Pressable>
+        <View className="mt-1 items-center">
+          <Pressable
+            onPress={() =>
+              navigation.getParent()?.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+              })
+            }
+            accessibilityRole="button"
+            accessibilityLabel="Sair da conta"
+            className="h-12 w-full max-w-[340px] flex-row items-center justify-center gap-2 rounded-field bg-danger-soft active:opacity-80"
+          >
+            <LogOutIcon size={18} color={color.danger} />
+            <Text className="text-[15px] font-semibold text-danger">
+              Sair da conta
+            </Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from 'react-native';
+import { Image, Pressable, Text, View } from 'react-native';
 
 /**
  * Cabeçalho padrão das telas principais: wordmark "frutou" à esquerda +
@@ -7,15 +7,22 @@ import { Pressable, Text, View } from 'react-native';
  * mesma identidade visual e proporções entre as abas.
  */
 type Props = {
-  /** Inicial exibida no avatar. */
+  /** Inicial exibida no avatar quando não há foto. */
   avatarInitial: string;
+  /** URI da foto de perfil; se ausente, mostra a inicial. */
+  avatarUri?: string | null;
   /** Ação ao tocar no avatar (abrir perfil). Opcional. */
   onPressAvatar?: () => void;
   /** Slot opcional à direita, no lugar do avatar (ex.: sino de notificações). */
   right?: React.ReactNode;
 };
 
-export function ScreenHeader({ avatarInitial, onPressAvatar, right }: Props) {
+export function ScreenHeader({
+  avatarInitial,
+  avatarUri,
+  onPressAvatar,
+  right,
+}: Props) {
   return (
     <View className="flex-row items-center justify-between border-b border-line bg-input px-5 py-3">
       <Text
@@ -33,9 +40,17 @@ export function ScreenHeader({ avatarInitial, onPressAvatar, right }: Props) {
           disabled={!onPressAvatar}
           className="h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-line bg-surface"
         >
-          <Text className="text-[15px] font-bold text-primary">
-            {avatarInitial}
-          </Text>
+          {avatarUri ? (
+            <Image
+              source={{ uri: avatarUri }}
+              style={{ width: '100%', height: '100%' }}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text className="text-[15px] font-bold text-primary">
+              {avatarInitial}
+            </Text>
+          )}
         </Pressable>
       )}
     </View>

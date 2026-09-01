@@ -2,36 +2,46 @@ import { useMemo, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { BellIcon, GiftIcon, HandHeartIcon, TagIcon } from '@/components/icons';
+import { Avatar } from '@/components/Avatar';
+import { GiftIcon, HandHeartIcon, TagIcon } from '@/components/icons';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { SearchBar } from '@/components/SearchBar';
-import { mockConversas } from '@/data/mockConversas';
-import { usuarioAtual } from '@/data/mockPerfil';
+import { type Conversa, useConversas } from '@/data/mockConversas';
+import { usePerfil } from '@/data/mockPerfil';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
+function ultimaMensagem(c: Conversa): string {
+  const m = c.mensagens[c.mensagens.length - 1];
+  if (!m) return '';
+  return m.de === 'eu' ? `Você: ${m.texto}` : m.texto;
+}
+
 export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>) {
-  const naoLidas = mockConversas.filter((c) => c.naoLida).length;
+  const perfil = usePerfil();
+  const conversas = useConversas();
+  const naoLidas = conversas.filter((c) => c.naoLida).length;
   const [busca, setBusca] = useState('');
 
   const lista = useMemo(() => {
     const q = busca.trim().toLowerCase();
-    if (!q) return mockConversas;
-    return mockConversas.filter(
+    if (!q) return conversas;
+    return conversas.filter(
       (c) =>
         c.nome.toLowerCase().includes(q) ||
         c.assunto.toLowerCase().includes(q) ||
-        c.ultimaMensagem.toLowerCase().includes(q),
+        ultimaMensagem(c).toLowerCase().includes(q),
     );
-  }, [busca]);
+  }, [busca, conversas]);
 
   const buscando = busca.trim().length > 0;
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScreenHeader
-        avatarInitial={usuarioAtual.inicial}
+        avatarInitial={perfil.inicial}
+        avatarUri={perfil.fotoUri}
         onPressAvatar={() => navigation.navigate('Usuario')}
       />
 
@@ -46,28 +56,16 @@ export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>)
         )}
         ListHeaderComponent={
           <View className="gap-4 px-5 pb-3 pt-4">
-            <View className="flex-row items-start justify-between">
-              <ScreenTitle
-                title="Conversas"
-                subtitle={
-                  naoLidas > 0
-                    ? `${naoLidas} nova${naoLidas > 1 ? 's' : ''} mensage${
-                        naoLidas > 1 ? 'ns' : 'm'
-                      }`
-                    : 'Tudo em dia'
-                }
-              />
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Notificações"
-                className="relative h-10 w-10 items-center justify-center rounded-full bg-input"
-              >
-                <BellIcon size={18} color={color.accent} />
-                {naoLidas > 0 ? (
-                  <View className="absolute right-2 top-2 h-2 w-2 rounded-full bg-danger" />
-                ) : null}
-              </Pressable>
-            </View>
+            <ScreenTitle
+              title="Conversas"
+              subtitle={
+                naoLidas > 0
+                  ? `${naoLidas} nova${naoLidas > 1 ? 's' : ''} mensage${
+                      naoLidas > 1 ? 'ns' : 'm'
+                    }`
+                  : 'Tudo em dia'
+              }
+            />
 
             <SearchBar
               placeholder="Buscar conversas..."
@@ -88,16 +86,13 @@ export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>)
           const isDoacao = item.modalidade === 'doacao';
           return (
             <Pressable
+              onPress={() => navigation.navigate('Chat', { id: item.id })}
               accessibilityRole="button"
-              accessibilityLabel={`Conversa com ${item.nome} sobre ${item.assunto}`}
+              accessibilityLabel={`Abrir conversa com ${item.nome} sobre ${item.assunto}`}
               className="flex-row items-center gap-3 px-5 py-3 active:bg-input"
             >
               <View className="relative">
-                <View className="h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-input">
-                  <Text className="text-[16px] font-bold text-primary">
-                    {item.nome.charAt(0)}
-                  </Text>
-                </View>
+                <Avatar initial={item.nome.charAt(0)} size={48} />
                 <View
                   className={`absolute -bottom-0.5 -right-0.5 h-5 w-5 items-center justify-center rounded-full border-2 border-background ${
                     isDoacao ? 'bg-primary' : 'bg-accent'
@@ -118,7 +113,9 @@ export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>)
                   </Text>
                   <Text
                     className={`text-[12px] ${
-                      item.naoLida ? 'font-semibold text-accent-dark' : 'text-muted'
+                      item.naoLida
+                        ? 'font-semibold text-accent-dark'
+                        : 'text-muted'
                     }`}
                   >
                     {item.quando}
@@ -130,7 +127,7 @@ export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>)
                   }`}
                   numberOfLines={1}
                 >
-                  {item.ultimaMensagem}
+                  {ultimaMensagem(item)}
                 </Text>
                 <Text className="text-[11px] uppercase tracking-wide text-muted">
                   {item.assunto}

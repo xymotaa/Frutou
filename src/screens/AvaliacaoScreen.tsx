@@ -15,6 +15,7 @@ import {
   ChevronLeftIcon,
   HandHeartIcon,
 } from '@/components/icons';
+import { BottomCTA } from '@/components/BottomCTA';
 import { StarRating } from '@/components/StarRating';
 import type { RootStackScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
@@ -103,23 +104,12 @@ export function AvaliacaoScreen({
         </ScrollView>
 
         {/* CTA */}
-        <View className="border-t border-line bg-surface px-5 pb-2 pt-3">
-          <Pressable
-            onPress={handleConfirmar}
-            disabled={nota === 0}
-            accessibilityRole="button"
-            accessibilityLabel="Confirmar avaliação"
-            accessibilityState={{ disabled: nota === 0 }}
-            className={`h-14 flex-row items-center justify-center gap-2 rounded-field active:opacity-80 ${
-              nota === 0 ? 'bg-primary opacity-50' : 'bg-primary'
-            }`}
-          >
-            <CheckCircleIcon size={18} color="#FFFFFF" />
-            <Text className="text-[15px] font-semibold text-white">
-              Confirmar avaliação
-            </Text>
-          </Pressable>
-        </View>
+        <BottomCTA
+          label="Confirmar avaliação"
+          onPress={handleConfirmar}
+          disabled={nota === 0}
+          icon={<CheckCircleIcon size={18} color="#FFFFFF" />}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

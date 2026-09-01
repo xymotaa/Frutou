@@ -8,8 +8,9 @@ import { HandHeartIcon, ListIcon, MapIcon, MicIcon } from '@/components/icons';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { SearchBar } from '@/components/SearchBar';
-import { mockListings } from '@/data/mockListings';
-import { usuarioAtual } from '@/data/mockPerfil';
+import { iniciarConversa, textoInteresse } from '@/data/mockConversas';
+import { mockListings, type Listing } from '@/data/mockListings';
+import { usePerfil } from '@/data/mockPerfil';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
@@ -40,6 +41,7 @@ function distanciaEmKm(texto: string): number {
 export function ExploreScreen({
   navigation,
 }: MainTabScreenProps<'Explorar'>) {
+  const perfil = usePerfil();
   const [mode, setMode] = useState<ViewMode>('lista');
   const [favoritos, setFavoritos] = useState<Set<string>>(new Set());
   const [busca, setBusca] = useState('');
@@ -54,6 +56,23 @@ export function ExploreScreen({
       return next;
     });
   }, []);
+
+  const abrirChat = useCallback(
+    (l: Listing) => {
+      const doacao = l.modalidade === 'doacao';
+      const assunto = doacao
+        ? `${l.titulo} · Doação`
+        : `${l.titulo} · ${l.preco}`;
+      const id = iniciarConversa(
+        l.autor,
+        assunto,
+        l.modalidade,
+        textoInteresse(l.titulo, doacao),
+      );
+      navigation.navigate('Chat', { id });
+    },
+    [navigation],
+  );
 
   const listaFiltrada = useMemo(() => {
     const q = busca.trim().toLowerCase();
@@ -77,7 +96,8 @@ export function ExploreScreen({
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
       <ScreenHeader
-        avatarInitial={usuarioAtual.inicial}
+        avatarInitial={perfil.inicial}
+        avatarUri={perfil.fotoUri}
         onPressAvatar={() => navigation.navigate('Usuario')}
       />
 
@@ -92,6 +112,7 @@ export function ExploreScreen({
           <ExploreCard
             listing={item}
             favorito={favoritos.has(item.id)}
+            onAction={() => abrirChat(item)}
             onToggleFavorito={() => toggleFavorito(item.id)}
             onPress={() => navigation.navigate('Detalhes', { id: item.id })}
           />

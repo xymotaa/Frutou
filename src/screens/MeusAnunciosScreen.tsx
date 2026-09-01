@@ -122,6 +122,9 @@ export function MeusAnunciosScreen({
 
                 <View className="mt-1 flex-row gap-2">
                   <Pressable
+                    onPress={() =>
+                      navigation.navigate('EditarAnuncio', { id: item.id })
+                    }
                     accessibilityRole="button"
                     accessibilityLabel={`Editar ${item.titulo}`}
                     className="flex-1 flex-row items-center justify-center gap-1.5 rounded-full border border-primary py-2.5 active:opacity-80"

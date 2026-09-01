@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Avatar } from '@/components/Avatar';
+import { BottomCTA } from '@/components/BottomCTA';
 import { fruitArt } from '@/components/fruits';
 import {
   BookmarkIcon,
@@ -16,6 +18,7 @@ import {
   TagIcon,
   WalkIcon,
 } from '@/components/icons';
+import { iniciarConversa, textoInteresse } from '@/data/mockConversas';
 import { getListing } from '@/data/mockListings';
 import type { RootStackScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
@@ -42,6 +45,19 @@ export function DetalhesScreen({
 
   const Art = fruitArt[listing.fruta];
   const isDoacao = listing.modalidade === 'doacao';
+
+  function abrirChat() {
+    const assunto = isDoacao
+      ? `${listing!.titulo} · Doação`
+      : `${listing!.titulo} · ${listing!.preco}`;
+    const id = iniciarConversa(
+      listing!.autor,
+      assunto,
+      listing!.modalidade,
+      textoInteresse(listing!.titulo, isDoacao),
+    );
+    navigation.navigate('Chat', { id });
+  }
 
   const metas: MetaRow[] = [
     { icon: <HourglassIcon size={17} />, text: listing.disponibilidade },
@@ -135,11 +151,7 @@ export function DetalhesScreen({
 
           {/* Anunciante */}
           <View className="mt-5 flex-row items-center gap-3 rounded-2xl bg-input p-3">
-            <View className="h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-surface">
-              <Text className="text-[16px] font-bold text-primary">
-                {listing.autor.charAt(0)}
-              </Text>
-            </View>
+            <Avatar initial={listing.autor.charAt(0)} size={48} />
             <View className="flex-1">
               <Text className="text-[15px] font-semibold text-ink">
                 {listing.autor}
@@ -153,7 +165,7 @@ export function DetalhesScreen({
               </View>
             </View>
             <Pressable
-              onPress={() => navigation.navigate('Main', { screen: 'Mensagens' })}
+              onPress={abrirChat}
               accessibilityRole="button"
               accessibilityLabel={`Enviar mensagem para ${listing.autor}`}
               className="h-10 w-10 items-center justify-center rounded-full bg-surface active:opacity-80"
@@ -181,23 +193,13 @@ export function DetalhesScreen({
       </ScrollView>
 
       {/* CTA fixo */}
-      <View className="border-t border-line bg-surface px-5 pb-2 pt-3">
-        <Pressable
-          onPress={() =>
-            navigation.navigate('Avaliacao', { nomeParceiro: listing.autor })
-          }
-          accessibilityRole="button"
-          accessibilityLabel="Demonstrar interesse neste anúncio"
-          className={`h-14 flex-row items-center justify-center gap-2 rounded-field active:opacity-80 ${
-            isDoacao ? 'bg-primary' : 'bg-accent'
-          }`}
-        >
-          <HandHeartIcon size={18} color="#FFFFFF" />
-          <Text className="text-[15px] font-semibold text-white">
-            Tenho interesse
-          </Text>
-        </Pressable>
-      </View>
+      <BottomCTA
+        label={isDoacao ? 'Tenho interesse' : 'Comprar'}
+        onPress={abrirChat}
+        icon={<HandHeartIcon size={18} color="#FFFFFF" />}
+        bgClassName={isDoacao ? 'bg-primary' : 'bg-accent'}
+        accessibilityLabel="Falar com quem anunciou"
+      />
     </SafeAreaView>
   );
 }

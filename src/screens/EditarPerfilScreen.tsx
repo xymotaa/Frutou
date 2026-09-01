@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Avatar } from '@/components/Avatar';
 import { FormField } from '@/components/FormField';
 import {
   CheckCircleIcon,
@@ -18,21 +19,31 @@ import {
   PencilIcon,
   UserIcon,
 } from '@/components/icons';
-import { usuarioAtual } from '@/data/mockPerfil';
+import { atualizarPerfil, usePerfil } from '@/data/mockPerfil';
 import type { RootStackScreenProps } from '@/navigation/types';
+import { escolherAcaoFoto } from '@/services/pickImage';
 import { color } from '@/theme/tokens';
 
 export function EditarPerfilScreen({
   navigation,
 }: RootStackScreenProps<'EditarPerfil'>) {
-  const [nome, setNome] = useState(usuarioAtual.nome);
-  const [email, setEmail] = useState(usuarioAtual.email);
-  const [telefone, setTelefone] = useState(usuarioAtual.telefone);
-  const [bairro, setBairro] = useState(usuarioAtual.bairro);
-  const [bio, setBio] = useState(usuarioAtual.bio);
+  const perfil = usePerfil();
+  const [nome, setNome] = useState(perfil.nome);
+  const [email, setEmail] = useState(perfil.email);
+  const [telefone, setTelefone] = useState(perfil.telefone);
+  const [bairro, setBairro] = useState(perfil.bairro);
+  const [bio, setBio] = useState(perfil.bio);
+  const [fotoUri, setFotoUri] = useState<string | null>(perfil.fotoUri);
+
+  async function handleFoto() {
+    const acao = await escolherAcaoFoto(!!fotoUri);
+    if (acao.tipo === 'trocar') setFotoUri(acao.uri);
+    else if (acao.tipo === 'remover') setFotoUri(null);
+  }
 
   function handleSalvar() {
     // TODO: enviar para usersService.update quando o backend existir.
+    atualizarPerfil({ nome, email, telefone, bairro, bio, fotoUri });
     navigation.goBack();
   }
 
@@ -66,26 +77,41 @@ export function EditarPerfilScreen({
           showsVerticalScrollIndicator={false}
         >
           {/* Avatar */}
-          <View className="items-center gap-2 pt-2">
-            <View className="h-24 w-24">
-              <View className="h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-input">
-                <Text className="text-[32px] font-bold text-primary">
-                  {usuarioAtual.inicial}
-                </Text>
-              </View>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Trocar foto"
-                className="absolute bottom-0 right-0 h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-accent active:opacity-80"
-              >
+          <View className="items-center pt-2">
+            <Pressable
+              onPress={handleFoto}
+              accessibilityRole="button"
+              accessibilityLabel="Alterar foto de perfil"
+              className="h-24 w-24 active:opacity-90"
+            >
+              <Avatar initial={perfil.inicial} uri={fotoUri} size={96} />
+              <View className="absolute bottom-0 right-0 h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-accent">
                 <PencilIcon size={14} color="#FFFFFF" />
-              </Pressable>
-            </View>
-            <Pressable accessibilityRole="button" accessibilityLabel="Trocar foto">
-              <Text className="text-[13px] font-semibold text-primary">
-                Trocar foto
-              </Text>
+              </View>
             </Pressable>
+
+            <View className="mt-3 flex-row items-center gap-4">
+              <Pressable
+                onPress={handleFoto}
+                accessibilityRole="button"
+                accessibilityLabel={fotoUri ? 'Trocar foto' : 'Adicionar foto'}
+              >
+                <Text className="text-[13px] font-semibold text-primary">
+                  {fotoUri ? 'Trocar foto' : 'Adicionar foto'}
+                </Text>
+              </Pressable>
+              {fotoUri ? (
+                <Pressable
+                  onPress={() => setFotoUri(null)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Remover foto"
+                >
+                  <Text className="text-[13px] font-semibold text-danger">
+                    Remover foto
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
           </View>
 
           <View className="gap-4">
@@ -131,17 +157,19 @@ export function EditarPerfilScreen({
         </ScrollView>
 
         <View className="border-t border-line bg-surface px-5 pb-2 pt-3">
-          <Pressable
-            onPress={handleSalvar}
-            accessibilityRole="button"
-            accessibilityLabel="Salvar alterações"
-            className="h-14 flex-row items-center justify-center gap-2 rounded-field bg-primary active:opacity-80"
-          >
-            <CheckCircleIcon size={18} color="#FFFFFF" />
-            <Text className="text-[15px] font-semibold text-white">
-              Salvar alterações
-            </Text>
-          </Pressable>
+          <View className="items-center">
+            <Pressable
+              onPress={handleSalvar}
+              accessibilityRole="button"
+              accessibilityLabel="Salvar alterações"
+              className="h-12 w-full max-w-[340px] flex-row items-center justify-center gap-2 rounded-field bg-primary active:opacity-80"
+            >
+              <CheckCircleIcon size={18} color="#FFFFFF" />
+              <Text className="text-[15px] font-semibold text-white">
+                Salvar alterações
+              </Text>
+            </Pressable>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
