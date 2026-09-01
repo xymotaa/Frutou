@@ -1,13 +1,13 @@
 import { memo } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
-import { fruitArt } from '@/components/fruits';
+import type { ListingListItem } from '@/api';
 import { HandHeartIcon, HeartIcon, MapPinIcon, TagIcon } from '@/components/icons';
-import type { Listing } from '@/data/mockListings';
+import { ListingImage } from '@/components/ListingImage';
 import { color } from '@/theme/tokens';
 
 type Props = {
-  listing: Listing;
+  listing: ListingListItem;
   favorito: boolean;
   onToggleFavorito: () => void;
   onPress?: () => void;
@@ -21,9 +21,13 @@ function ExploreCardBase({
   onPress,
   onAction,
 }: Props) {
-  const Art = fruitArt[listing.fruta];
   const isDoacao = listing.modalidade === 'doacao';
+  const badgeLabel = isDoacao ? 'Doação' : (listing.precoTexto ?? 'À venda');
   const actionLabel = isDoacao ? 'Combinar' : 'Comprar';
+
+  const linhaLocal = [listing.distanciaTexto, listing.detalhe]
+    .filter(Boolean)
+    .join(' • ');
 
   return (
     <View className="relative overflow-hidden rounded-3xl border border-line bg-surface">
@@ -32,11 +36,11 @@ function ExploreCardBase({
         onPress={onPress}
         accessibilityRole="button"
         accessibilityLabel={`${listing.titulo}, ${
-          isDoacao ? 'doação' : listing.preco
-        }, a ${listing.distancia}, por ${listing.autor}`}
+          isDoacao ? 'doação' : badgeLabel
+        }, por ${listing.autor.nome}`}
         className="relative aspect-[16/10] w-full active:opacity-95"
       >
-        <Art />
+        <ListingImage fotos={listing.fotos} className="h-full w-full" />
 
         {/* Badge: "Doação" ou o preço por kg */}
         <View
@@ -49,9 +53,7 @@ function ExploreCardBase({
           ) : (
             <TagIcon size={13} />
           )}
-          <Text className="text-[12px] font-bold text-white">
-            {isDoacao ? 'Doação' : listing.preco}
-          </Text>
+          <Text className="text-[12px] font-bold text-white">{badgeLabel}</Text>
         </View>
       </Pressable>
 
@@ -77,12 +79,12 @@ function ExploreCardBase({
       <View className="gap-2 p-4">
         <Text className="text-[18px] font-bold text-ink">{listing.titulo}</Text>
 
-        <View className="flex-row items-center gap-1">
-          <MapPinIcon size={14} color={color.muted} />
-          <Text className="text-[13px] text-muted">
-            A {listing.distancia} • {listing.detalhe}
-          </Text>
-        </View>
+        {linhaLocal ? (
+          <View className="flex-row items-center gap-1">
+            <MapPinIcon size={14} color={color.muted} />
+            <Text className="text-[13px] text-muted">{linhaLocal}</Text>
+          </View>
+        ) : null}
 
         <View className="mt-1 h-px bg-line" />
 
@@ -90,18 +92,18 @@ function ExploreCardBase({
           <View className="flex-1 flex-row items-center gap-2">
             <View className="h-7 w-7 items-center justify-center rounded-full bg-input">
               <Text className="text-[12px] font-bold text-primary">
-                {listing.autor.charAt(0)}
+                {listing.autor.nome.charAt(0)}
               </Text>
             </View>
             <Text className="flex-1 text-[13px] text-ink" numberOfLines={1}>
-              {listing.autor}
+              {listing.autor.nome}
             </Text>
           </View>
 
           <Pressable
             onPress={onAction}
             accessibilityRole="button"
-            accessibilityLabel={`${actionLabel} com ${listing.autor}`}
+            accessibilityLabel={`${actionLabel} com ${listing.autor.nome}`}
             className={`rounded-full px-5 py-2.5 active:opacity-80 ${
               isDoacao ? 'bg-primary' : 'bg-accent'
             }`}

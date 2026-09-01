@@ -1,25 +1,26 @@
-import { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { listingsApi } from '@/api';
 import { Avatar } from '@/components/Avatar';
 import { BottomCTA } from '@/components/BottomCTA';
-import { fruitArt } from '@/components/fruits';
 import {
   BookmarkIcon,
   ChevronLeftIcon,
   ClockIcon,
   HandHeartIcon,
   HourglassIcon,
-  MapIcon,
   MapPinIcon,
   MessageIcon,
   StarIcon,
   TagIcon,
   WalkIcon,
 } from '@/components/icons';
+import { ListingImage } from '@/components/ListingImage';
 import { iniciarConversa, textoInteresse } from '@/data/mockConversas';
-import { getListing } from '@/data/mockListings';
+import { resolveMediaUrl } from '@/lib/media';
+import { useListing } from '@/state/feed';
 import type { RootStackScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
@@ -29,29 +30,63 @@ export function DetalhesScreen({
   route,
   navigation,
 }: RootStackScreenProps<'Detalhes'>) {
-  const listing = getListing(route.params.id);
+  const { data: listing, loading, erro, refetch } = useListing(route.params.id);
   const [salvo, setSalvo] = useState(false);
+  const [salvoTocado, setSalvoTocado] = useState(false);
 
-  if (!listing) {
+  // sincroniza o estado local com o valor da API na 1ª carga
+  useEffect(() => {
+    if (listing && !salvoTocado) setSalvo(listing.favorito);
+  }, [listing, salvoTocado]);
+
+  if (loading) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-background px-8">
-        <Text className="text-[15px] text-muted">Anúncio não encontrado.</Text>
-        <Pressable onPress={() => navigation.goBack()} className="mt-4">
-          <Text className="text-[14px] font-semibold text-primary">Voltar</Text>
-        </Pressable>
+      <SafeAreaView className="flex-1 items-center justify-center bg-background">
+        <ActivityIndicator size="large" color={color.primary} />
       </SafeAreaView>
     );
   }
 
-  const Art = fruitArt[listing.fruta];
+  if (erro || !listing) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-background px-8">
+        <Text className="text-center text-[15px] text-muted">
+          {erro ?? 'Anúncio não encontrado.'}
+        </Text>
+        <View className="mt-4 flex-row gap-4">
+          {erro ? (
+            <Pressable onPress={refetch}>
+              <Text className="text-[14px] font-semibold text-primary">
+                Tentar de novo
+              </Text>
+            </Pressable>
+          ) : null}
+          <Pressable onPress={() => navigation.goBack()}>
+            <Text className="text-[14px] font-semibold text-primary">Voltar</Text>
+          </Pressable>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   const isDoacao = listing.modalidade === 'doacao';
+
+  function toggleSalvo() {
+    const proximo = !salvo;
+    setSalvo(proximo);
+    setSalvoTocado(true);
+    const req = proximo
+      ? listingsApi.favoritar(listing!.id)
+      : listingsApi.desfavoritar(listing!.id);
+    req.catch(() => setSalvo(!proximo));
+  }
 
   function abrirChat() {
     const assunto = isDoacao
       ? `${listing!.titulo} · Doação`
-      : `${listing!.titulo} · ${listing!.preco}`;
+      : `${listing!.titulo} · ${listing!.precoTexto ?? 'à venda'}`;
     const id = iniciarConversa(
-      listing!.autor,
+      listing!.autor.nome,
       assunto,
       listing!.modalidade,
       textoInteresse(listing!.titulo, isDoacao),
@@ -61,9 +96,25 @@ export function DetalhesScreen({
 
   const metas: MetaRow[] = [
     { icon: <HourglassIcon size={17} />, text: listing.disponibilidade },
-    { icon: <MapPinIcon size={17} color={color.accent} />, text: `${listing.distancia} de você` },
-    { icon: <ClockIcon size={17} />, text: `Publicado ${listing.publicadoHa}` },
   ];
+  if (listing.distanciaTexto) {
+    metas.push({
+      icon: <MapPinIcon size={17} color={color.accent} />,
+      text: `${listing.distanciaTexto} de você`,
+    });
+  }
+  metas.push({
+    icon: <ClockIcon size={17} />,
+    text: `Publicado ${listing.publicadoHa}`,
+  });
+
+  const autorFoto = resolveMediaUrl(listing.autor.fotoUrl);
+  const localTexto = [
+    listing.bairro,
+    listing.tempoAPe ? `aprox. ${listing.tempoAPe}` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -92,7 +143,11 @@ export function DetalhesScreen({
       >
         {/* Hero */}
         <View className="relative aspect-[4/3] w-full">
-          <Art />
+          <ListingImage
+            fotos={listing.fotos}
+            className="h-full w-full"
+            fallbackIconSize={40}
+          />
           <View
             className={`absolute left-4 top-4 flex-row items-center gap-1.5 rounded-full px-3 py-1.5 ${
               isDoacao ? 'bg-primary' : 'bg-accent'
@@ -104,7 +159,7 @@ export function DetalhesScreen({
               <TagIcon size={13} />
             )}
             <Text className="text-[12px] font-bold text-white">
-              {isDoacao ? 'Doação' : listing.preco}
+              {isDoacao ? 'Doação' : (listing.precoTexto ?? 'À venda')}
             </Text>
           </View>
         </View>
@@ -116,7 +171,7 @@ export function DetalhesScreen({
               {listing.titulo}
             </Text>
             <Pressable
-              onPress={() => setSalvo((v) => !v)}
+              onPress={toggleSalvo}
               accessibilityRole="button"
               accessibilityLabel={salvo ? 'Remover dos salvos' : 'Salvar anúncio'}
               accessibilityState={{ selected: salvo }}
@@ -149,46 +204,52 @@ export function DetalhesScreen({
             {listing.descricao}
           </Text>
 
+          {listing.janelaRetirada ? (
+            <View className="mt-3 flex-row items-center gap-2.5">
+              <ClockIcon size={17} />
+              <Text className="text-[14px] text-ink">
+                Retirada: {listing.janelaRetirada}
+              </Text>
+            </View>
+          ) : null}
+
           {/* Anunciante */}
           <View className="mt-5 flex-row items-center gap-3 rounded-2xl bg-input p-3">
-            <Avatar initial={listing.autor.charAt(0)} size={48} />
+            <Avatar
+              initial={listing.autor.nome.charAt(0)}
+              uri={autorFoto}
+              size={48}
+            />
             <View className="flex-1">
               <Text className="text-[15px] font-semibold text-ink">
-                {listing.autor}
+                {listing.autor.nome}
               </Text>
               <View className="mt-0.5 flex-row items-center gap-1">
                 <StarIcon size={13} />
                 <Text className="text-[13px] text-muted">
-                  {listing.autorNota.toFixed(1).replace('.', ',')} ({listing.autorTrocas}{' '}
-                  trocas)
+                  {listing.autor.nota.toFixed(1).replace('.', ',')} (
+                  {listing.autor.trocas} trocas)
                 </Text>
               </View>
             </View>
             <Pressable
               onPress={abrirChat}
               accessibilityRole="button"
-              accessibilityLabel={`Enviar mensagem para ${listing.autor}`}
+              accessibilityLabel={`Enviar mensagem para ${listing.autor.nome}`}
               className="h-10 w-10 items-center justify-center rounded-full bg-surface active:opacity-80"
             >
               <MessageIcon size={18} color={color.primary} />
             </Pressable>
           </View>
 
-          {/* Mini-mapa (placeholder até o mapa real) */}
-          <View className="mt-4 overflow-hidden rounded-2xl border border-line">
-            <View className="h-28 w-full items-center justify-center bg-input">
-              <MapIcon size={26} color={color.line} />
-              <Text className="mt-1 text-[12px] text-muted">
-                Mapa em breve
-              </Text>
+          {/* Local — linha simples até o mapa real (Fase 6) */}
+          {localTexto ? (
+            <View className="mt-4 flex-row items-center gap-2.5 rounded-2xl bg-input px-4 py-3">
+              <MapPinIcon size={17} color={color.accent} />
+              <Text className="flex-1 text-[13px] text-ink">{localTexto}</Text>
+              {listing.tempoAPe ? <WalkIcon size={16} /> : null}
             </View>
-            <View className="flex-row items-center gap-2 bg-surface px-4 py-3">
-              <WalkIcon size={17} />
-              <Text className="text-[13px] text-ink">
-                Aprox. {listing.tempoAPe}
-              </Text>
-            </View>
-          </View>
+          ) : null}
         </View>
       </ScrollView>
 

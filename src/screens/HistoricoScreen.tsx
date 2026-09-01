@@ -2,13 +2,13 @@ import { useMemo, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { fruitArt } from '@/components/fruits';
 import {
   ChevronLeftIcon,
   HandHeartIcon,
   HistoryIcon,
   TagIcon,
 } from '@/components/icons';
+import { ListingImage } from '@/components/ListingImage';
 import { StarRating } from '@/components/StarRating';
 import { mockHistorico } from '@/data/mockHistorico';
 import type { RootStackScreenProps } from '@/navigation/types';
@@ -84,15 +84,16 @@ export function HistoricoScreen({
           </View>
         }
         renderItem={({ item }) => {
-          const Art = fruitArt[item.fruta];
           const isDoacao = item.modalidade === 'doacao';
           const recebi = item.papel === 'recebi';
 
           return (
             <View className="flex-row gap-3 rounded-2xl border border-line bg-surface p-3">
-              <View className="h-16 w-16 overflow-hidden rounded-xl">
-                <Art />
-              </View>
+              <ListingImage
+                fotos={null}
+                className="h-16 w-16 rounded-xl"
+                fallbackIconSize={20}
+              />
 
               <View className="flex-1 gap-1">
                 <View className="flex-row items-center justify-between">

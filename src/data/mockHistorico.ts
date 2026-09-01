@@ -1,5 +1,3 @@
-import type { FruitKey } from '@/components/fruits';
-
 export type ItemHistorico = {
   id: string;
   titulo: string;
@@ -11,7 +9,6 @@ export type ItemHistorico = {
   preco?: string;
   /** Nota que você deu ao parceiro (0 = ainda não avaliou). */
   minhaNota: number;
-  fruta: FruitKey;
 };
 
 /** Dados de exemplo. Substituir por listingsService.history() com o backend. */
@@ -24,7 +21,6 @@ export const mockHistorico: ItemHistorico[] = [
     data: '28 ago 2026',
     modalidade: 'doacao',
     minhaNota: 5,
-    fruta: 'manga',
   },
   {
     id: 'h2',
@@ -34,7 +30,6 @@ export const mockHistorico: ItemHistorico[] = [
     data: '21 ago 2026',
     modalidade: 'doacao',
     minhaNota: 4,
-    fruta: 'limao',
   },
   {
     id: 'h3',
@@ -45,7 +40,6 @@ export const mockHistorico: ItemHistorico[] = [
     modalidade: 'venda',
     preco: 'R$ 15 / kg',
     minhaNota: 5,
-    fruta: 'acerola',
   },
   {
     id: 'h4',
@@ -56,6 +50,5 @@ export const mockHistorico: ItemHistorico[] = [
     modalidade: 'venda',
     preco: 'R$ 5 / kg',
     minhaNota: 0,
-    fruta: 'laranja',
   },
 ];

@@ -1,31 +1,31 @@
 import { Pressable, Text, View } from 'react-native';
 
-import { fruitArt } from '@/components/fruits';
+import type { ListingListItem } from '@/api';
 import { HandHeartIcon, MapPinIcon } from '@/components/icons';
-import type { Listing } from '@/data/mockListings';
+import { ListingImage } from '@/components/ListingImage';
 import { color } from '@/theme/tokens';
 
 type Props = {
-  listing: Listing;
+  listing: ListingListItem;
   onPress?: () => void;
 };
 
 export function ListingCard({ listing, onPress }: Props) {
-  const Art = fruitArt[listing.fruta];
   const isDoacao = listing.modalidade === 'doacao';
-  const badgeLabel = isDoacao ? 'Doação' : listing.preco;
+  const badgeLabel = isDoacao ? 'Doação' : (listing.precoTexto ?? 'À venda');
+  const distancia = listing.distanciaTexto;
 
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={`${listing.titulo}, ${
-        isDoacao ? 'doação' : listing.preco
-      }, ${listing.autor}, a ${listing.distancia}`}
+        isDoacao ? 'doação' : badgeLabel
+      }, ${listing.autor.nome}${distancia ? `, a ${distancia}` : ''}`}
       className="flex-1 overflow-hidden rounded-2xl border border-line bg-surface active:opacity-90"
     >
       <View className="aspect-[3/2] w-full">
-        <Art />
+        <ListingImage fotos={listing.fotos} className="h-full w-full" />
         <View
           className={`absolute left-2 top-2 flex-row items-center gap-1 rounded-full px-2 py-1 ${
             isDoacao ? 'bg-primary' : 'bg-accent'
@@ -42,12 +42,14 @@ export function ListingCard({ listing, onPress }: Props) {
         </Text>
         <View className="flex-row items-center justify-between">
           <Text className="flex-1 text-[12px] text-muted" numberOfLines={1}>
-            {listing.autor}
+            {listing.autor.nome}
           </Text>
-          <View className="flex-row items-center gap-0.5">
-            <MapPinIcon size={13} color={color.muted} />
-            <Text className="text-[12px] text-muted">{listing.distancia}</Text>
-          </View>
+          {distancia ? (
+            <View className="flex-row items-center gap-0.5">
+              <MapPinIcon size={13} color={color.muted} />
+              <Text className="text-[12px] text-muted">{distancia}</Text>
+            </View>
+          ) : null}
         </View>
       </View>
     </Pressable>

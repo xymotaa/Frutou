@@ -1,5 +1,3 @@
-import type { FruitKey } from '@/components/fruits';
-
 export type StatusAnuncio = 'ativo' | 'encerrado';
 
 export type MeuAnuncio = {
@@ -11,7 +9,6 @@ export type MeuAnuncio = {
   modalidade: 'doacao' | 'venda';
   preco?: string;
   status: StatusAnuncio;
-  fruta: FruitKey;
 };
 
 export function getMeuAnuncio(id: string): MeuAnuncio | undefined {
@@ -28,7 +25,6 @@ export const mockMeusAnuncios: MeuAnuncio[] = [
     distancia: '2 km',
     modalidade: 'doacao',
     status: 'ativo',
-    fruta: 'laranja',
   },
   {
     id: 'a2',
@@ -39,7 +35,6 @@ export const mockMeusAnuncios: MeuAnuncio[] = [
     modalidade: 'venda',
     preco: 'R$ 5,00 / dúzia',
     status: 'ativo',
-    fruta: 'limao',
   },
   {
     id: 'a3',
@@ -49,7 +44,6 @@ export const mockMeusAnuncios: MeuAnuncio[] = [
     distancia: '3 km',
     modalidade: 'doacao',
     status: 'encerrado',
-    fruta: 'manga',
   },
   {
     id: 'a4',
@@ -60,6 +54,5 @@ export const mockMeusAnuncios: MeuAnuncio[] = [
     modalidade: 'venda',
     preco: 'R$ 8,00 / kg',
     status: 'encerrado',
-    fruta: 'acerola',
   },
 ];

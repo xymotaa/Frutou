@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { fruitArt } from '@/components/fruits';
 import {
   BanIcon,
   ChevronLeftIcon,
@@ -11,6 +10,7 @@ import {
   PencilIcon,
   TagIcon,
 } from '@/components/icons';
+import { ListingImage } from '@/components/ListingImage';
 import { mockMeusAnuncios, type StatusAnuncio } from '@/data/mockMeusAnuncios';
 import type { RootStackScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
@@ -75,14 +75,13 @@ export function MeusAnunciosScreen({
           </View>
         }
         renderItem={({ item }) => {
-          const Art = fruitArt[item.fruta];
           const isDoacao = item.modalidade === 'doacao';
           const encerrado = item.status === 'encerrado';
 
           return (
             <View className="overflow-hidden rounded-2xl border border-line bg-surface">
               <View className="relative aspect-[16/9] w-full">
-                <Art />
+                <ListingImage fotos={null} className="h-full w-full" />
                 {encerrado ? (
                   <View className="absolute inset-0 items-center justify-center bg-ink-scrim">
                     <Text className="text-[13px] font-bold uppercase tracking-wide text-white">

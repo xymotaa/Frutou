@@ -1,21 +1,19 @@
-import { useCallback, useMemo, useState } from 'react';
-import { FlatList, Pressable, ScrollView, Text, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, FlatList, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import type { ListingListItem } from '@/api';
 import { ExploreCard } from '@/components/ExploreCard';
-import { ExploreMap } from '@/components/ExploreMap';
-import { HandHeartIcon, ListIcon, MapIcon, MicIcon } from '@/components/icons';
+import { HandHeartIcon, MicIcon } from '@/components/icons';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { SearchBar } from '@/components/SearchBar';
 import { iniciarConversa, textoInteresse } from '@/data/mockConversas';
-import { mockListings, type Listing } from '@/data/mockListings';
+import { alternarFavorito, useFeed } from '@/state/feed';
 import { usePerfil } from '@/state/perfil';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
-
-type ViewMode = 'lista' | 'mapa';
 type ModalidadeFiltro = 'todas' | 'doacao' | 'venda';
 type DistanciaFiltro = 'todas' | '1' | '3';
 
@@ -31,40 +29,60 @@ const DISTANCIA_OPTS: { value: DistanciaFiltro; label: string }[] = [
   { value: '3', label: 'Até 3 km' },
 ];
 
-/** Converte "1,2 km" / "850 m" para número em km. */
-function distanciaEmKm(texto: string): number {
-  const normalizado = texto.replace(',', '.');
-  const valor = parseFloat(normalizado);
-  return normalizado.includes('km') ? valor : valor / 1000;
-}
-
 export function ExploreScreen({
   navigation,
 }: MainTabScreenProps<'Explorar'>) {
   const perfil = usePerfil();
-  const [mode, setMode] = useState<ViewMode>('lista');
-  const [favoritos, setFavoritos] = useState<Set<string>>(new Set());
   const [busca, setBusca] = useState('');
+  const [buscaDebounced, setBuscaDebounced] = useState('');
   const [modalidade, setModalidade] = useState<ModalidadeFiltro>('todas');
   const [distancia, setDistancia] = useState<DistanciaFiltro>('todas');
 
-  const toggleFavorito = useCallback((id: string) => {
-    setFavoritos((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
+  // favoritos otimistas: id -> favorito?  (sobrepõe o valor vindo da API)
+  const [favOverride, setFavOverride] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    const t = setTimeout(() => setBuscaDebounced(busca.trim()), 300);
+    return () => clearTimeout(t);
+  }, [busca]);
+
+  const filtros = useMemo(
+    () => ({
+      q: buscaDebounced || undefined,
+      modalidade: modalidade === 'todas' ? undefined : modalidade,
+      raioKm: distancia === 'todas' ? undefined : Number(distancia),
+    }),
+    [buscaDebounced, modalidade, distancia],
+  );
+
+  const { data, loading, erro, refetch } = useFeed(filtros);
+  const lista = data ?? [];
+
+  const isFavorito = useCallback(
+    (l: ListingListItem) => favOverride[l.id] ?? l.favorito,
+    [favOverride],
+  );
+
+  const toggleFavorito = useCallback(
+    (l: ListingListItem) => {
+      const atual = favOverride[l.id] ?? l.favorito;
+      setFavOverride((prev) => ({ ...prev, [l.id]: !atual }));
+      alternarFavorito(l.id, atual).catch(() => {
+        // reverte se a API falhar
+        setFavOverride((prev) => ({ ...prev, [l.id]: atual }));
+      });
+    },
+    [favOverride],
+  );
 
   const abrirChat = useCallback(
-    (l: Listing) => {
+    (l: ListingListItem) => {
       const doacao = l.modalidade === 'doacao';
       const assunto = doacao
         ? `${l.titulo} · Doação`
-        : `${l.titulo} · ${l.preco}`;
+        : `${l.titulo} · ${l.precoTexto ?? 'à venda'}`;
       const id = iniciarConversa(
-        l.autor,
+        l.autor.nome,
         assunto,
         l.modalidade,
         textoInteresse(l.titulo, doacao),
@@ -73,25 +91,6 @@ export function ExploreScreen({
     },
     [navigation],
   );
-
-  const listaFiltrada = useMemo(() => {
-    const q = busca.trim().toLowerCase();
-    return mockListings.filter((l) => {
-      if (modalidade !== 'todas' && l.modalidade !== modalidade) return false;
-      if (distancia !== 'todas' && distanciaEmKm(l.distancia) > Number(distancia)) {
-        return false;
-      }
-      if (
-        q &&
-        !l.titulo.toLowerCase().includes(q) &&
-        !l.autor.toLowerCase().includes(q) &&
-        !l.fruta.toLowerCase().includes(q)
-      ) {
-        return false;
-      }
-      return true;
-    });
-  }, [busca, modalidade, distancia]);
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -102,18 +101,17 @@ export function ExploreScreen({
       />
 
       <FlatList
-        data={mode === 'lista' ? listaFiltrada : []}
+        data={lista}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24, gap: 16 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
-        scrollEnabled={mode === 'lista'}
         renderItem={({ item }) => (
           <ExploreCard
             listing={item}
-            favorito={favoritos.has(item.id)}
+            favorito={isFavorito(item)}
             onAction={() => abrirChat(item)}
-            onToggleFavorito={() => toggleFavorito(item.id)}
+            onToggleFavorito={() => toggleFavorito(item)}
             onPress={() => navigation.navigate('Detalhes', { id: item.id })}
           />
         )}
@@ -202,46 +200,37 @@ export function ExploreScreen({
               })}
             </ScrollView>
 
-            {/* Contagem + toggle lista/mapa */}
             <View className="flex-row items-center justify-between pt-1">
               <Text className="text-[13px] text-muted">
-                {listaFiltrada.length}{' '}
-                {listaFiltrada.length === 1 ? 'fruta' : 'frutas'} perto de você
+                {loading
+                  ? 'Carregando…'
+                  : `${lista.length} ${
+                      lista.length === 1 ? 'fruta' : 'frutas'
+                    } perto de você`}
               </Text>
-
-              <View className="flex-row overflow-hidden rounded-full border border-line bg-input">
-                <Pressable
-                  onPress={() => setMode('lista')}
-                  accessibilityRole="button"
-                  accessibilityLabel="Ver em lista"
-                  accessibilityState={{ selected: mode === 'lista' }}
-                  className={`px-3 py-1.5 ${mode === 'lista' ? 'bg-surface' : ''}`}
-                >
-                  <ListIcon
-                    size={16}
-                    color={mode === 'lista' ? color.primary : color.muted}
-                  />
-                </Pressable>
-                <Pressable
-                  onPress={() => setMode('mapa')}
-                  accessibilityRole="button"
-                  accessibilityLabel="Ver no mapa"
-                  accessibilityState={{ selected: mode === 'mapa' }}
-                  className={`px-3 py-1.5 ${mode === 'mapa' ? 'bg-surface' : ''}`}
-                >
-                  <MapIcon
-                    size={16}
-                    color={mode === 'mapa' ? color.primary : color.muted}
-                  />
-                </Pressable>
-              </View>
+              {loading && lista.length > 0 ? (
+                <ActivityIndicator size="small" color={color.muted} />
+              ) : null}
             </View>
           </View>
         }
         ListEmptyComponent={
-          mode === 'mapa' ? (
-            <View className="h-[420px] overflow-hidden rounded-3xl border border-line">
-              <ExploreMap listings={listaFiltrada} />
+          loading ? (
+            <View className="items-center pt-16">
+              <ActivityIndicator size="large" color={color.primary} />
+            </View>
+          ) : erro ? (
+            <View className="items-center gap-3 px-8 pt-12">
+              <Text className="text-center text-[14px] text-muted">{erro}</Text>
+              <Pressable
+                onPress={refetch}
+                accessibilityRole="button"
+                className="rounded-full bg-primary px-5 py-2.5 active:opacity-80"
+              >
+                <Text className="text-[13px] font-semibold text-white">
+                  Tentar de novo
+                </Text>
+              </Pressable>
             </View>
           ) : (
             <View className="items-center gap-2 px-8 pt-12">

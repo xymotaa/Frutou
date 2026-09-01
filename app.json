@@ -19,6 +19,12 @@
           "photosPermission": "O Frutou usa suas fotos para você escolher uma imagem de perfil."
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "O Frutou usa sua localização para mostrar frutas próximas e calcular distâncias."
+        }
+      ],
       "expo-secure-store"
     ]
   }
