@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -10,9 +11,22 @@ import { usuarioAtual } from '@/data/mockPerfil';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
-
 export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>) {
   const naoLidas = mockConversas.filter((c) => c.naoLida).length;
+  const [busca, setBusca] = useState('');
+
+  const lista = useMemo(() => {
+    const q = busca.trim().toLowerCase();
+    if (!q) return mockConversas;
+    return mockConversas.filter(
+      (c) =>
+        c.nome.toLowerCase().includes(q) ||
+        c.assunto.toLowerCase().includes(q) ||
+        c.ultimaMensagem.toLowerCase().includes(q),
+    );
+  }, [busca]);
+
+  const buscando = busca.trim().length > 0;
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -22,10 +36,11 @@ export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>)
       />
 
       <FlatList
-        data={mockConversas}
+        data={lista}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingBottom: 24 }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         ItemSeparatorComponent={() => (
           <View className="ml-[76px] h-px bg-line" />
         )}
@@ -54,7 +69,19 @@ export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>)
               </Pressable>
             </View>
 
-            <SearchBar placeholder="Buscar conversas..." />
+            <SearchBar
+              placeholder="Buscar conversas..."
+              value={busca}
+              onChangeText={setBusca}
+            />
+          </View>
+        }
+        ListEmptyComponent={
+          <View className="items-center gap-2 px-8 pt-12">
+            <HandHeartIcon size={32} color={color.line} />
+            <Text className="text-center text-[14px] text-muted">
+              Nenhuma conversa encontrada para “{busca.trim()}”.
+            </Text>
           </View>
         }
         renderItem={({ item }) => {
@@ -117,29 +144,31 @@ export function MensagensScreen({ navigation }: MainTabScreenProps<'Mensagens'>)
           );
         }}
         ListFooterComponent={
-          <View className="items-center gap-2 px-8 pt-12">
-            <View className="h-16 w-16 items-center justify-center rounded-full bg-input">
-              <HandHeartIcon size={28} color={color.line} />
-            </View>
-            <Text className="text-[15px] font-semibold text-ink">
-              Sem mais conversas
-            </Text>
-            <Text className="text-center text-[13px] leading-5 text-muted">
-              Explore a comunidade e encontre mais frutas frescas para
-              compartilhar.
-            </Text>
-            <Pressable
-              onPress={() => navigation.navigate('Explorar')}
-              accessibilityRole="button"
-              accessibilityLabel="Ir para Explorar"
-              className="mt-1 flex-row items-center gap-1.5 rounded-full bg-input px-4 py-2 active:opacity-80"
-            >
-              <GiftIcon size={15} color={color.primary} />
-              <Text className="text-[13px] font-semibold text-primary">
-                Descobrir
+          buscando || lista.length === 0 ? null : (
+            <View className="items-center gap-2 px-8 pt-12">
+              <View className="h-16 w-16 items-center justify-center rounded-full bg-input">
+                <HandHeartIcon size={28} color={color.line} />
+              </View>
+              <Text className="text-[15px] font-semibold text-ink">
+                Sem mais conversas
               </Text>
-            </Pressable>
-          </View>
+              <Text className="text-center text-[13px] leading-5 text-muted">
+                Explore a comunidade e encontre mais frutas frescas para
+                compartilhar.
+              </Text>
+              <Pressable
+                onPress={() => navigation.navigate('Explorar')}
+                accessibilityRole="button"
+                accessibilityLabel="Ir para Explorar"
+                className="mt-1 flex-row items-center gap-1.5 rounded-full bg-input px-4 py-2 active:opacity-80"
+              >
+                <GiftIcon size={15} color={color.primary} />
+                <Text className="text-[13px] font-semibold text-primary">
+                  Descobrir
+                </Text>
+              </Pressable>
+            </View>
+          )
         }
       />
     </SafeAreaView>

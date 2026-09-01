@@ -24,6 +24,12 @@ export function MainTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        // Fade suave ao trocar de aba (padrão do v7 é sem transição).
+        animation: 'fade',
+        transitionSpec: {
+          animation: 'timing',
+          config: { duration: 180 },
+        },
         tabBarActiveTintColor: color.primary,
         tabBarInactiveTintColor: color.muted,
         tabBarStyle: {

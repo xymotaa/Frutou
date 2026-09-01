@@ -29,12 +29,12 @@ export function PerfilScreen({ navigation }: MainTabScreenProps<'Usuario'>) {
     {
       icon: <HistoryIcon size={20} color={color.ink} />,
       label: 'Histórico',
-      onPress: () => {},
+      onPress: () => navigation.navigate('Historico'),
     },
     {
       icon: <SettingsIcon size={20} color={color.ink} />,
       label: 'Configurações',
-      onPress: () => {},
+      onPress: () => navigation.navigate('Configuracoes'),
     },
   ];
 
@@ -55,6 +55,7 @@ export function PerfilScreen({ navigation }: MainTabScreenProps<'Usuario'>) {
               </Text>
             </View>
             <Pressable
+              onPress={() => navigation.navigate('EditarPerfil')}
               accessibilityRole="button"
               accessibilityLabel="Editar perfil"
               className="absolute bottom-0 right-0 h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-accent active:opacity-80"

@@ -42,6 +42,7 @@ export function ExploreScreen({
 }: MainTabScreenProps<'Explorar'>) {
   const [mode, setMode] = useState<ViewMode>('lista');
   const [favoritos, setFavoritos] = useState<Set<string>>(new Set());
+  const [busca, setBusca] = useState('');
   const [modalidade, setModalidade] = useState<ModalidadeFiltro>('todas');
   const [distancia, setDistancia] = useState<DistanciaFiltro>('todas');
 
@@ -55,14 +56,23 @@ export function ExploreScreen({
   }, []);
 
   const listaFiltrada = useMemo(() => {
+    const q = busca.trim().toLowerCase();
     return mockListings.filter((l) => {
       if (modalidade !== 'todas' && l.modalidade !== modalidade) return false;
       if (distancia !== 'todas' && distanciaEmKm(l.distancia) > Number(distancia)) {
         return false;
       }
+      if (
+        q &&
+        !l.titulo.toLowerCase().includes(q) &&
+        !l.autor.toLowerCase().includes(q) &&
+        !l.fruta.toLowerCase().includes(q)
+      ) {
+        return false;
+      }
       return true;
     });
-  }, [modalidade, distancia]);
+  }, [busca, modalidade, distancia]);
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -76,6 +86,7 @@ export function ExploreScreen({
         keyExtractor={(item) => item.id}
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24, gap: 16 }}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         scrollEnabled={mode === 'lista'}
         renderItem={({ item }) => (
           <ExploreCard
@@ -94,6 +105,8 @@ export function ExploreScreen({
 
             <SearchBar
               placeholder="Qual fruta você procura?"
+              value={busca}
+              onChangeText={setBusca}
               trailing={{
                 icon: <MicIcon size={18} color={color.ink} />,
                 onPress: () => {},

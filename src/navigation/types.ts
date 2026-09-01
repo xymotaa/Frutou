@@ -20,6 +20,9 @@ export type RootStackParamList = {
   Detalhes: { id: string };
   MeusAnuncios: undefined;
   Avaliacao: { nomeParceiro: string };
+  EditarPerfil: undefined;
+  Configuracoes: undefined;
+  Historico: undefined;
 };
 
 export type RootStackScreenProps<T extends keyof RootStackParamList> =

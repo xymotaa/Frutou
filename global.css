@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Preview web: remove o outline nativo do browser nos campos —
+   no app (iOS/Android) isso não existe. */
+input,
+textarea {
+  outline: none;
+}
