@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -10,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ApiError, reviewsApi } from '@/api';
 import {
   CheckCircleIcon,
   ChevronLeftIcon,
@@ -24,13 +26,35 @@ export function AvaliacaoScreen({
   route,
   navigation,
 }: RootStackScreenProps<'Avaliacao'>) {
-  const { nomeParceiro } = route.params;
+  const { conversationId, nomeParceiro } = route.params;
   const [nota, setNota] = useState(0);
   const [comentario, setComentario] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
-  function handleConfirmar() {
-    // TODO: enviar para reviewsService.create quando o backend existir.
-    navigation.goBack();
+  async function handleConfirmar() {
+    if (nota === 0 || enviando) return;
+    setEnviando(true);
+    setErro(null);
+    try {
+      await reviewsApi.create({
+        conversationId,
+        nota,
+        comentario: comentario.trim() || undefined,
+      });
+      navigation.goBack();
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 409) {
+        setErro('Você já avaliou esta troca.');
+      } else {
+        setErro(
+          e instanceof ApiError
+            ? e.message
+            : 'Não foi possível enviar a avaliação. Tente de novo.',
+        );
+      }
+      setEnviando(false);
+    }
   }
 
   return (
@@ -101,14 +125,25 @@ export function AvaliacaoScreen({
               />
             </View>
           </View>
+          {erro ? (
+            <Text className="mt-4 text-center text-[13px] text-danger">
+              {erro}
+            </Text>
+          ) : null}
         </ScrollView>
 
         {/* CTA */}
         <BottomCTA
-          label="Confirmar avaliação"
+          label={enviando ? 'Enviando…' : 'Confirmar avaliação'}
           onPress={handleConfirmar}
-          disabled={nota === 0}
-          icon={<CheckCircleIcon size={18} color="#FFFFFF" />}
+          disabled={nota === 0 || enviando}
+          icon={
+            enviando ? (
+              <ActivityIndicator size="small" color="#FFFFFF" />
+            ) : (
+              <CheckCircleIcon size={18} color="#FFFFFF" />
+            )
+          }
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

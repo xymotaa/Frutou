@@ -1,7 +1,15 @@
-import { useMemo, useState } from 'react';
-import { FlatList, Pressable, Text, View } from 'react-native';
+import { useCallback, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  Text,
+  View,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ApiError, reviewsApi, type HistoricoItem } from '@/api';
 import {
   ChevronLeftIcon,
   HandHeartIcon,
@@ -10,7 +18,6 @@ import {
 } from '@/components/icons';
 import { ListingImage } from '@/components/ListingImage';
 import { StarRating } from '@/components/StarRating';
-import { mockHistorico } from '@/data/mockHistorico';
 import type { RootStackScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
@@ -20,14 +27,37 @@ export function HistoricoScreen({
   navigation,
 }: RootStackScreenProps<'Historico'>) {
   const [aba, setAba] = useState<Aba>('todos');
+  const [itens, setItens] = useState<HistoricoItem[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState<string | null>(null);
 
-  const lista = useMemo(
-    () =>
-      aba === 'todos'
-        ? mockHistorico
-        : mockHistorico.filter((h) => h.papel === aba),
-    [aba],
+  const carregar = useCallback(() => {
+    setLoading(true);
+    setErro(null);
+    reviewsApi
+      .history()
+      .then(setItens)
+      .catch((e) =>
+        setErro(
+          e instanceof ApiError
+            ? e.message
+            : 'Não foi possível carregar o histórico.',
+        ),
+      )
+      .finally(() => setLoading(false));
+  }, []);
+
+  // recarrega ao voltar da tela de Avaliação
+  useFocusEffect(
+    useCallback(() => {
+      carregar();
+    }, [carregar]),
   );
+
+  const lista = useMemo(() => {
+    const base = itens ?? [];
+    return aba === 'todos' ? base : base.filter((h) => h.papel === aba);
+  }, [aba, itens]);
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -115,11 +145,11 @@ export function HistoricoScreen({
                       <TagIcon size={10} color="#FFFFFF" />
                     )}
                     <Text className="text-[10px] font-bold text-white">
-                      {isDoacao ? 'Doação' : item.preco}
+                      {isDoacao ? 'Doação' : (item.precoTexto ?? 'Venda')}
                     </Text>
                   </View>
                   <Text className="text-[12px] text-muted">
-                    {recebi ? 'de' : 'para'} {item.parceiro}
+                    {recebi ? 'de' : 'para'} {item.parceiro.nome}
                   </Text>
                 </View>
 
@@ -134,11 +164,12 @@ export function HistoricoScreen({
                   <Pressable
                     onPress={() =>
                       navigation.navigate('Avaliacao', {
-                        nomeParceiro: item.parceiro,
+                        conversationId: item.conversationId,
+                        nomeParceiro: item.parceiro.nome,
                       })
                     }
                     accessibilityRole="button"
-                    accessibilityLabel={`Avaliar troca com ${item.parceiro}`}
+                    accessibilityLabel={`Avaliar troca com ${item.parceiro.nome}`}
                   >
                     <Text className="text-[12px] font-semibold text-accent-dark">
                       Avaliar esta troca
@@ -150,13 +181,32 @@ export function HistoricoScreen({
           );
         }}
         ListEmptyComponent={
-          <View className="items-center gap-2 px-8 pt-12">
-            <HistoryIcon size={32} color={color.line} />
-            <Text className="text-center text-[14px] text-muted">
-              Nada por aqui ainda. Suas trocas concluídas vão aparecer nesta
-              lista.
-            </Text>
-          </View>
+          loading ? (
+            <View className="items-center pt-16">
+              <ActivityIndicator size="large" color={color.primary} />
+            </View>
+          ) : erro ? (
+            <View className="items-center gap-3 px-8 pt-12">
+              <Text className="text-center text-[14px] text-muted">{erro}</Text>
+              <Pressable
+                onPress={carregar}
+                accessibilityRole="button"
+                className="rounded-full bg-primary px-5 py-2.5 active:opacity-80"
+              >
+                <Text className="text-[13px] font-semibold text-white">
+                  Tentar de novo
+                </Text>
+              </Pressable>
+            </View>
+          ) : (
+            <View className="items-center gap-2 px-8 pt-12">
+              <HistoryIcon size={32} color={color.line} />
+              <Text className="text-center text-[14px] text-muted">
+                Nada por aqui ainda. Suas trocas concluídas vão aparecer nesta
+                lista.
+              </Text>
+            </View>
+          )
         }
       />
     </SafeAreaView>

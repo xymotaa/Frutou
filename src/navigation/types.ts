@@ -20,7 +20,7 @@ export type RootStackParamList = {
   Detalhes: { id: string };
   MeusAnuncios: undefined;
   EditarAnuncio: { id: string };
-  Avaliacao: { nomeParceiro: string };
+  Avaliacao: { conversationId: string; nomeParceiro: string };
   EditarPerfil: undefined;
   Configuracoes: undefined;
   Historico: undefined;

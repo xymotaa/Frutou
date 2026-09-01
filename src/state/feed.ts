@@ -111,13 +111,15 @@ export function useFavoritos(): Async<ListingListItem[]> {
 
 /* ---- detalhe de um anúncio ---- */
 
+/** `id` vazio → o hook fica ocioso (sem request), útil para carregamento condicional. */
 export function useListing(id: string): Async<ListingDetail> {
   const [data, setData] = useState<ListingDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(id !== '');
   const [erro, setErro] = useState<string | null>(null);
   const reqId = useRef(0);
 
   const buscar = useCallback(() => {
+    if (!id) return;
     const rid = ++reqId.current;
     setLoading(true);
     setErro(null);
@@ -135,8 +137,13 @@ export function useListing(id: string): Async<ListingDetail> {
   }, [id]);
 
   useEffect(() => {
+    if (!id) {
+      setData(null);
+      setLoading(false);
+      return;
+    }
     buscar();
-  }, [buscar]);
+  }, [id, buscar]);
 
   return { data, loading, erro, refetch: buscar };
 }

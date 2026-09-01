@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SettingRow } from '@/components/SettingRow';
+import { usePrefs } from '@/state/prefs';
 import {
   BellIcon,
   ChevronLeftIcon,
@@ -32,11 +32,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export function ConfiguracoesScreen({
   navigation,
 }: RootStackScreenProps<'Configuracoes'>) {
-  const [notifMensagens, setNotifMensagens] = useState(true);
-  const [notifAnuncios, setNotifAnuncios] = useState(true);
-  const [notifAvaliacoes, setNotifAvaliacoes] = useState(false);
-  const [localizacao, setLocalizacao] = useState(true);
-  const [perfilPublico, setPerfilPublico] = useState(true);
+  const { prefs, set } = usePrefs();
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={['top']}>
@@ -67,20 +63,26 @@ export function ConfiguracoesScreen({
             icon={<MessageIcon size={20} color={color.ink} />}
             label="Novas mensagens"
             description="Avisar quando alguém te enviar uma mensagem"
-            toggle={{ value: notifMensagens, onValueChange: setNotifMensagens }}
+            toggle={{
+              value: prefs.notifMensagens,
+              onValueChange: (v) => set('notifMensagens', v),
+            }}
           />
           <SettingRow
             icon={<TagIcon size={18} color={color.ink} />}
             label="Anúncios por perto"
             description="Frutas novas no seu bairro"
-            toggle={{ value: notifAnuncios, onValueChange: setNotifAnuncios }}
+            toggle={{
+              value: prefs.notifAnuncios,
+              onValueChange: (v) => set('notifAnuncios', v),
+            }}
           />
           <SettingRow
             icon={<BellIcon size={18} color={color.ink} />}
             label="Avaliações recebidas"
             toggle={{
-              value: notifAvaliacoes,
-              onValueChange: setNotifAvaliacoes,
+              value: prefs.notifAvaliacoes,
+              onValueChange: (v) => set('notifAvaliacoes', v),
             }}
           />
         </Section>
@@ -90,13 +92,19 @@ export function ConfiguracoesScreen({
             icon={<MapPinIcon size={18} color={color.ink} />}
             label="Usar minha localização"
             description="Para mostrar frutas próximas e calcular distâncias"
-            toggle={{ value: localizacao, onValueChange: setLocalizacao }}
+            toggle={{
+              value: prefs.localizacao,
+              onValueChange: (v) => set('localizacao', v),
+            }}
           />
           <SettingRow
             icon={<UserIcon size={18} color={color.ink} />}
             label="Perfil público"
             description="Outras pessoas podem ver seu nome e avaliações"
-            toggle={{ value: perfilPublico, onValueChange: setPerfilPublico }}
+            toggle={{
+              value: prefs.perfilPublico,
+              onValueChange: (v) => set('perfilPublico', v),
+            }}
           />
         </Section>
 

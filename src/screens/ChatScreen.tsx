@@ -13,15 +13,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { ChatMessage } from '@/api';
 import { Avatar } from '@/components/Avatar';
-import { ChevronLeftIcon } from '@/components/icons';
+import { ChevronLeftIcon, ChevronRightIcon } from '@/components/icons';
+import { ListingImage } from '@/components/ListingImage';
 import { resolveMediaUrl } from '@/lib/media';
 import { useConversa } from '@/state/chat';
+import { useListing } from '@/state/feed';
 import type { RootStackScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
 export function ChatScreen({ route, navigation }: RootStackScreenProps<'Chat'>) {
   const { id } = route.params;
   const { data: conversa, loading, erro, enviando, enviar } = useConversa(id);
+  const anuncio = useListing(conversa?.listingId ?? '');
   const [texto, setTexto] = useState('');
 
   const dados = useMemo(
@@ -96,6 +99,29 @@ export function ChatScreen({ route, navigation }: RootStackScreenProps<'Chat'>) 
           </Text>
         </View>
       </View>
+
+      {/* Faixa "Ver anúncio" */}
+      <Pressable
+        onPress={() =>
+          navigation.navigate('Detalhes', { id: conversa.listingId })
+        }
+        accessibilityRole="button"
+        accessibilityLabel={`Ver o anúncio ${anuncio.data?.titulo ?? ''}`}
+        className="flex-row items-center gap-3 border-b border-line bg-surface px-4 py-2.5 active:bg-input"
+      >
+        <ListingImage
+          fotos={anuncio.data?.fotos}
+          className="h-10 w-10 rounded-lg"
+          fallbackIconSize={16}
+        />
+        <View className="flex-1">
+          <Text className="text-[13px] font-semibold text-ink" numberOfLines={1}>
+            {anuncio.data?.titulo ?? conversa.assunto}
+          </Text>
+          <Text className="text-[11px] text-muted">Ver anúncio</Text>
+        </View>
+        <ChevronRightIcon size={18} color={color.muted} />
+      </Pressable>
 
       <KeyboardAvoidingView
         className="flex-1"
