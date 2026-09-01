@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -9,7 +9,14 @@ import {
   Text,
   View,
 } from 'react-native';
+import MapView, {
+  Marker,
+  PROVIDER_DEFAULT,
+  UrlTile,
+  type Region,
+} from 'react-native-maps';
 
+import { geoApi } from '@/api';
 import { BottomCTA } from '@/components/BottomCTA';
 import { FormField } from '@/components/FormField';
 import {
@@ -22,6 +29,7 @@ import {
 } from '@/components/icons';
 import { resolveMediaUrl } from '@/lib/media';
 import { pickListingPhotos } from '@/services/pickImage';
+import { ensureLocation, getCoords } from '@/state/local';
 import { color } from '@/theme/tokens';
 
 export type Modo = 'doar' | 'vender';
@@ -36,6 +44,8 @@ export type AnuncioValores = {
   detalhes: string;
   bairro: string;
   horarios: string;
+  lat: number | null;
+  lng: number | null;
   /** URIs locais (novas) ou URLs do backend (edição). */
   fotos: string[];
 };
@@ -48,6 +58,8 @@ const VAZIO: AnuncioValores = {
   detalhes: '',
   bairro: '',
   horarios: '',
+  lat: null,
+  lng: null,
   fotos: [],
 };
 
@@ -60,6 +72,165 @@ function FieldLabel({ children }: { children: string }) {
     >
       {children}
     </Text>
+  );
+}
+
+type LocalPickerProps = {
+  bairro: string;
+  lat: number | null;
+  lng: number | null;
+  onChange: (patch: {
+    bairro?: string;
+    lat?: number | null;
+    lng?: number | null;
+  }) => void;
+};
+
+/**
+ * Campo de local: texto "Bairro / região" + mapa com pin arrastável.
+ * Digitar o texto geocodifica (GET /geo) e centraliza o pin. "Usar minha
+ * localização" pega o GPS. Arrastar o pin ajusta lat/lng à mão.
+ */
+function LocalPicker({ bairro, lat, lng, onChange }: LocalPickerProps) {
+  const isAndroid = Platform.OS === 'android';
+  const [buscando, setBuscando] = useState(false);
+  const [pegandoGps, setPegandoGps] = useState(false);
+  const mapRef = useRef<MapView>(null);
+  const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const temPin = typeof lat === 'number' && typeof lng === 'number';
+
+  const regiao: Region = {
+    latitude: lat ?? -23.55,
+    longitude: lng ?? -46.63,
+    latitudeDelta: 0.02,
+    longitudeDelta: 0.02,
+  };
+
+  function animarPara(la: number, ln: number) {
+    mapRef.current?.animateToRegion(
+      { latitude: la, longitude: ln, latitudeDelta: 0.01, longitudeDelta: 0.01 },
+      300,
+    );
+  }
+
+  function aoDigitar(texto: string) {
+    onChange({ bairro: texto });
+    if (debounce.current) clearTimeout(debounce.current);
+    if (texto.trim().length < 3) return;
+    debounce.current = setTimeout(async () => {
+      setBuscando(true);
+      try {
+        const r = await geoApi.search(texto.trim());
+        if (r[0]) {
+          onChange({
+            lat: r[0].lat,
+            lng: r[0].lng,
+            bairro: r[0].bairro ?? texto,
+          });
+          animarPara(r[0].lat, r[0].lng);
+        }
+      } catch {
+        /* mantém o texto; sem coords */
+      } finally {
+        setBuscando(false);
+      }
+    }, 700);
+  }
+
+  async function usarMinhaLocalizacao() {
+    setPegandoGps(true);
+    try {
+      await ensureLocation();
+      const c = getCoords();
+      if (c) {
+        onChange({ lat: c.lat, lng: c.lng });
+        animarPara(c.lat, c.lng);
+      }
+    } finally {
+      setPegandoGps(false);
+    }
+  }
+
+  return (
+    <View className="gap-2">
+      <FormField
+        label="Bairro / região"
+        value={bairro}
+        onChangeText={aoDigitar}
+        placeholder="Ex: Vila Madalena, Centro..."
+        trailing={
+          buscando ? (
+            <ActivityIndicator size="small" color={color.muted} />
+          ) : (
+            <MapPinIcon size={18} color={color.muted} />
+          )
+        }
+      />
+
+      <View className="overflow-hidden rounded-field border border-line">
+        <View style={{ height: 160 }}>
+          <MapView
+            ref={mapRef}
+            style={{ flex: 1 }}
+            provider={PROVIDER_DEFAULT}
+            mapType={isAndroid ? 'none' : 'standard'}
+            initialRegion={regiao}
+            onPress={(e) => {
+              const { latitude, longitude } = e.nativeEvent.coordinate;
+              onChange({ lat: latitude, lng: longitude });
+            }}
+          >
+            {isAndroid && (
+              <UrlTile
+                urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                maximumZ={19}
+                tileSize={256}
+                shouldReplaceMapContent
+              />
+            )}
+            {temPin && (
+              <Marker
+                draggable
+                coordinate={{ latitude: lat!, longitude: lng! }}
+                onDragEnd={(e) => {
+                  const { latitude, longitude } = e.nativeEvent.coordinate;
+                  onChange({ lat: latitude, lng: longitude });
+                }}
+              />
+            )}
+          </MapView>
+          {isAndroid && (
+            <View className="absolute bottom-0.5 right-0.5 rounded bg-surface/80 px-1 py-0.5">
+              <Text className="text-[8px] text-muted">© OpenStreetMap</Text>
+            </View>
+          )}
+        </View>
+
+        <Pressable
+          onPress={usarMinhaLocalizacao}
+          disabled={pegandoGps}
+          accessibilityRole="button"
+          accessibilityLabel="Usar minha localização"
+          className="flex-row items-center justify-center gap-2 border-t border-line bg-surface py-3 active:opacity-80"
+        >
+          {pegandoGps ? (
+            <ActivityIndicator size="small" color={color.primary} />
+          ) : (
+            <MapPinIcon size={16} color={color.primary} />
+          )}
+          <Text className="text-[13px] font-semibold text-primary">
+            Usar minha localização
+          </Text>
+        </Pressable>
+      </View>
+
+      <Text className="text-[12px] text-muted">
+        {temPin
+          ? 'Toque no mapa ou arraste o pino para ajustar. Só o bairro aparece no anúncio.'
+          : 'Digite o bairro ou use sua localização para marcar no mapa.'}
+      </Text>
+    </View>
   );
 }
 
@@ -249,16 +420,12 @@ export function AnuncioForm({
             placeholder="Diga um pouco sobre as frutas. Estão maduras? Passaram do ponto? Precisam ser colhidas no pé?"
           />
 
-          <FormField
-            label="Bairro / região"
-            value={v.bairro}
-            onChangeText={(t) => set('bairro', t)}
-            placeholder="Ex: Vila Madalena, Centro..."
-            trailing={<MapPinIcon size={18} color={color.muted} />}
+          <LocalPicker
+            bairro={v.bairro}
+            lat={v.lat}
+            lng={v.lng}
+            onChange={(patch) => setV((prev) => ({ ...prev, ...patch }))}
           />
-          <Text className="-mt-3 text-[12px] text-muted">
-            Só o bairro aparece no anúncio.
-          </Text>
 
           <FormField
             label="Melhores horários"

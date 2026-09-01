@@ -85,6 +85,8 @@ export function EditarAnuncioScreen({
             detalhes: anuncio.descricao,
             bairro: anuncio.bairro ?? '',
             horarios: anuncio.janelaRetirada ?? '',
+            lat: anuncio.lat,
+            lng: anuncio.lng,
             fotos: resolveMediaUrls(anuncio.fotos),
           }}
           submitLabel={{

@@ -9,3 +9,4 @@ export { listingsApi } from './listings';
 export type { AnuncioInput, FeedParams } from './listings';
 export { chatApi } from './chat';
 export { reviewsApi } from './reviews';
+export { geoApi } from './geo';

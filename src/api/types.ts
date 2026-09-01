@@ -41,6 +41,9 @@ export type ListingListItem = {
   status: 'ativo' | 'encerrado';
   autor: UserPublic;
   favorito: boolean;
+  /** Coordenadas para o modo mapa. `null`/ausente quando o anúncio não tem local. */
+  lat?: number | null;
+  lng?: number | null;
 };
 
 export type ListingDetail = ListingListItem & {

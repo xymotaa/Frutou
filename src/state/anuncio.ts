@@ -26,5 +26,7 @@ export function valoresParaInput(v: AnuncioValores): AnuncioInput {
     disponibilidade: v.quantidade.trim(),
     bairro: v.bairro.trim() || undefined,
     janelaRetirada: v.horarios.trim() || undefined,
+    lat: typeof v.lat === 'number' ? v.lat : undefined,
+    lng: typeof v.lng === 'number' ? v.lng : undefined,
   };
 }

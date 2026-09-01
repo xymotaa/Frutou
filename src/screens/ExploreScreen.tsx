@@ -4,7 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import type { ListingListItem } from '@/api';
 import { ExploreCard } from '@/components/ExploreCard';
-import { HandHeartIcon, MicIcon } from '@/components/icons';
+import { HandHeartIcon, ListIcon, MapIcon, MapPinIcon, MicIcon } from '@/components/icons';
+import { MapaFrutas, temGeo } from '@/components/MapaFrutas';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ScreenTitle } from '@/components/ScreenTitle';
 import { SearchBar } from '@/components/SearchBar';
@@ -14,6 +15,7 @@ import { usePerfil } from '@/state/perfil';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
+type ViewMode = 'lista' | 'mapa';
 type ModalidadeFiltro = 'todas' | 'doacao' | 'venda';
 type DistanciaFiltro = 'todas' | '1' | '3';
 
@@ -33,6 +35,7 @@ export function ExploreScreen({
   navigation,
 }: MainTabScreenProps<'Explorar'>) {
   const perfil = usePerfil();
+  const [mode, setMode] = useState<ViewMode>('lista');
   const [busca, setBusca] = useState('');
   const [buscaDebounced, setBuscaDebounced] = useState('');
   const [modalidade, setModalidade] = useState<ModalidadeFiltro>('todas');
@@ -57,6 +60,7 @@ export function ExploreScreen({
 
   const { data, loading, erro, refetch } = useFeed(filtros);
   const lista = data ?? [];
+  const comGeo = useMemo(() => lista.filter(temGeo), [lista]);
 
   const isFavorito = useCallback(
     (l: ListingListItem) => favOverride[l.id] ?? l.favorito,
@@ -102,11 +106,17 @@ export function ExploreScreen({
       />
 
       <FlatList
-        data={lista}
+        data={mode === 'lista' ? lista : []}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 24, gap: 16 }}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingBottom: 24,
+          gap: 16,
+          flexGrow: mode === 'mapa' ? 1 : undefined,
+        }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        scrollEnabled={mode === 'lista'}
         renderItem={({ item }) => (
           <ExploreCard
             listing={item}
@@ -205,18 +215,68 @@ export function ExploreScreen({
               <Text className="text-[13px] text-muted">
                 {loading
                   ? 'Carregando…'
-                  : `${lista.length} ${
-                      lista.length === 1 ? 'fruta' : 'frutas'
-                    } perto de você`}
+                  : mode === 'mapa'
+                    ? `${comGeo.length} ${
+                        comGeo.length === 1 ? 'fruta' : 'frutas'
+                      } no mapa`
+                    : `${lista.length} ${
+                        lista.length === 1 ? 'fruta' : 'frutas'
+                      } perto de você`}
               </Text>
-              {loading && lista.length > 0 ? (
-                <ActivityIndicator size="small" color={color.muted} />
-              ) : null}
+
+              <View className="flex-row overflow-hidden rounded-full border border-line bg-input">
+                <Pressable
+                  onPress={() => setMode('lista')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Ver em lista"
+                  accessibilityState={{ selected: mode === 'lista' }}
+                  className={`px-3 py-1.5 ${mode === 'lista' ? 'bg-surface' : ''}`}
+                >
+                  <ListIcon
+                    size={16}
+                    color={mode === 'lista' ? color.primary : color.muted}
+                  />
+                </Pressable>
+                <Pressable
+                  onPress={() => setMode('mapa')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Ver no mapa"
+                  accessibilityState={{ selected: mode === 'mapa' }}
+                  className={`px-3 py-1.5 ${mode === 'mapa' ? 'bg-surface' : ''}`}
+                >
+                  <MapIcon
+                    size={16}
+                    color={mode === 'mapa' ? color.primary : color.muted}
+                  />
+                </Pressable>
+              </View>
             </View>
           </View>
         }
         ListEmptyComponent={
-          loading ? (
+          mode === 'mapa' ? (
+            <View className="-mx-5 flex-1 overflow-hidden">
+              {loading ? (
+                <View className="flex-1 items-center justify-center">
+                  <ActivityIndicator size="large" color={color.primary} />
+                </View>
+              ) : comGeo.length === 0 ? (
+                <View className="flex-1 items-center justify-center gap-2 px-8">
+                  <MapPinIcon size={32} color={color.line} />
+                  <Text className="text-center text-[14px] text-muted">
+                    Nenhuma fruta com localização para mostrar no mapa.
+                  </Text>
+                </View>
+              ) : (
+                <MapaFrutas
+                  listings={comGeo}
+                  onSelecionar={(id) =>
+                    navigation.navigate('Detalhes', { id })
+                  }
+                />
+              )}
+            </View>
+          ) : loading ? (
             <View className="items-center pt-16">
               <ActivityIndicator size="large" color={color.primary} />
             </View>

@@ -6,9 +6,11 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.frutou.app"
     },
     "android": {
+      "package": "dev.frutou.app",
       "predictiveBackGestureEnabled": false
     },
     "plugins": [

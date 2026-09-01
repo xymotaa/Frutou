@@ -18,6 +18,7 @@ import {
   WalkIcon,
 } from '@/components/icons';
 import { ListingImage } from '@/components/ListingImage';
+import { MiniMapa } from '@/components/MiniMapa';
 import { resolveMediaUrl } from '@/lib/media';
 import { iniciarConversa } from '@/state/chat';
 import { useListing } from '@/state/feed';
@@ -116,6 +117,8 @@ export function DetalhesScreen({
   });
 
   const autorFoto = resolveMediaUrl(listing.autor.fotoUrl);
+  const temCoords =
+    typeof listing.lat === 'number' && typeof listing.lng === 'number';
   const localTexto = [
     listing.bairro,
     listing.tempoAPe ? `aprox. ${listing.tempoAPe}` : null,
@@ -258,8 +261,25 @@ export function DetalhesScreen({
             </Pressable>
           </View>
 
-          {/* Local — linha simples até o mapa real (Fase 6) */}
-          {localTexto ? (
+          {/* Local */}
+          {temCoords ? (
+            <View className="mt-4 overflow-hidden rounded-2xl border border-line">
+              <MiniMapa
+                lat={listing.lat!}
+                lng={listing.lng!}
+                titulo={listing.titulo}
+              />
+              {localTexto ? (
+                <View className="flex-row items-center gap-2 bg-surface px-4 py-3">
+                  <MapPinIcon size={16} color={color.accent} />
+                  <Text className="flex-1 text-[13px] text-ink">
+                    {localTexto}
+                  </Text>
+                  {listing.tempoAPe ? <WalkIcon size={16} /> : null}
+                </View>
+              ) : null}
+            </View>
+          ) : localTexto ? (
             <View className="mt-4 flex-row items-center gap-2.5 rounded-2xl bg-input px-4 py-3">
               <MapPinIcon size={17} color={color.accent} />
               <Text className="flex-1 text-[13px] text-ink">{localTexto}</Text>
