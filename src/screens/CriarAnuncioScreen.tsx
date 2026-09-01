@@ -3,7 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AnuncioForm } from '@/components/AnuncioForm';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ScreenTitle } from '@/components/ScreenTitle';
-import { usePerfil } from '@/data/mockPerfil';
+import { usePerfil } from '@/state/perfil';
 import type { MainTabScreenProps } from '@/navigation/types';
 
 export function CriarAnuncioScreen({

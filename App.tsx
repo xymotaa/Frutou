@@ -8,21 +8,28 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { preloadImages } from '@/assets';
 import { RootNavigator } from '@/navigation/RootNavigator';
+import { restoreSession, useSession } from '@/state/session';
 
 SplashScreen.preventAutoHideAsync().catch(() => {
   /* já escondida — sem problema */
 });
 
 export default function App() {
-  const [ready, setReady] = useState(false);
+  const [assetsReady, setAssetsReady] = useState(false);
+  const { status } = useSession();
 
   useEffect(() => {
     Asset.loadAsync(preloadImages)
       .catch(() => {
         /* segue mesmo se algum asset falhar — a tela ainda renderiza */
       })
-      .finally(() => setReady(true));
+      .finally(() => setAssetsReady(true));
+
+    // valida o token guardado; define status = signedIn | signedOut
+    restoreSession();
   }, []);
+
+  const ready = assetsReady && status !== 'loading';
 
   const onLayout = useCallback(() => {
     if (ready) {

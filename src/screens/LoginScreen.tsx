@@ -9,25 +9,44 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ApiError } from '@/api/client';
+import { authApi } from '@/api/auth';
 import { logo } from '@/assets';
 import { Button } from '@/components/Button';
 import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from '@/components/icons';
 import { TextField } from '@/components/TextField';
 import type { RootStackScreenProps } from '@/navigation/types';
+import { signIn } from '@/state/session';
 
 export function LoginScreen({ navigation }: RootStackScreenProps<'Login'>) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [showSenha, setShowSenha] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
   async function handleLogin() {
+    if (!email.trim() || !senha) {
+      setErro('Preencha email e senha.');
+      return;
+    }
     setLoading(true);
-    // TODO: integrar com authService.login quando o backend existir.
-    setTimeout(() => {
+    setErro(null);
+    try {
+      const { token, user } = await authApi.login({
+        email: email.trim(),
+        senha,
+      });
+      await signIn(token, user);
+      // navegação troca sozinha (RootNavigator reage à sessão)
+    } catch (e) {
+      setErro(
+        e instanceof ApiError
+          ? e.message
+          : 'Não foi possível entrar. Verifique sua conexão.',
+      );
       setLoading(false);
-      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
-    }, 800);
+    }
   }
 
   return (
@@ -83,6 +102,12 @@ export function LoginScreen({ navigation }: RootStackScreenProps<'Login'>) {
               }}
             />
           </View>
+
+          {erro ? (
+            <Text className="mt-4 text-center text-[13px] text-danger">
+              {erro}
+            </Text>
+          ) : null}
 
           <View className="mt-8 flex-row gap-3">
             <Button label="Fazer login" onPress={handleLogin} loading={loading} />

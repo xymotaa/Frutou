@@ -10,7 +10,7 @@ import { ScreenTitle } from '@/components/ScreenTitle';
 import { SearchBar } from '@/components/SearchBar';
 import { iniciarConversa, textoInteresse } from '@/data/mockConversas';
 import { mockListings, type Listing } from '@/data/mockListings';
-import { usePerfil } from '@/data/mockPerfil';
+import { usePerfil } from '@/state/perfil';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 

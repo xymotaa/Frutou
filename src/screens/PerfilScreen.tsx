@@ -14,7 +14,8 @@ import {
 } from '@/components/icons';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { StarRating } from '@/components/StarRating';
-import { usePerfil } from '@/data/mockPerfil';
+import { usePerfil } from '@/state/perfil';
+import { signOut } from '@/state/session';
 import type { MainTabScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
@@ -112,12 +113,7 @@ export function PerfilScreen({ navigation }: MainTabScreenProps<'Usuario'>) {
         {/* Sair */}
         <View className="mt-1 items-center">
           <Pressable
-            onPress={() =>
-              navigation.getParent()?.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              })
-            }
+            onPress={() => signOut()}
             accessibilityRole="button"
             accessibilityLabel="Sair da conta"
             className="h-12 w-full max-w-[340px] flex-row items-center justify-center gap-2 rounded-field bg-danger-soft active:opacity-80"

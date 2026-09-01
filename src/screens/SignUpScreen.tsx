@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ApiError } from '@/api/client';
+import { authApi } from '@/api/auth';
 import { logo } from '@/assets';
 import { Button } from '@/components/Button';
 import {
@@ -22,6 +24,7 @@ import {
 } from '@/components/icons';
 import { TextField } from '@/components/TextField';
 import type { RootStackScreenProps } from '@/navigation/types';
+import { signIn } from '@/state/session';
 
 type Errors = Partial<Record<'nome' | 'email' | 'senha' | 'confirmar', string>>;
 
@@ -35,6 +38,7 @@ export function SignUpScreen({ navigation }: RootStackScreenProps<'SignUp'>) {
   const [showSenha, setShowSenha] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [loading, setLoading] = useState(false);
+  const [erroApi, setErroApi] = useState<string | null>(null);
 
   const emailRef = useRef<TextInput>(null);
   const senhaRef = useRef<TextInput>(null);
@@ -52,14 +56,30 @@ export function SignUpScreen({ navigation }: RootStackScreenProps<'SignUp'>) {
   async function handleSignUp() {
     const found = validate();
     setErrors(found);
+    setErroApi(null);
     if (Object.keys(found).length > 0) return;
 
     setLoading(true);
-    // TODO: integrar com authService.signUp quando o backend existir.
-    setTimeout(() => {
+    try {
+      const { token, user } = await authApi.register({
+        nome: nome.trim(),
+        email: email.trim(),
+        senha,
+      });
+      await signIn(token, user);
+      // navegação troca sozinha (RootNavigator reage à sessão)
+    } catch (e) {
+      if (e instanceof ApiError && e.code === 'email_taken') {
+        setErrors({ email: 'Este email já está em uso.' });
+      } else {
+        setErroApi(
+          e instanceof ApiError
+            ? e.message
+            : 'Não foi possível criar a conta. Verifique sua conexão.',
+        );
+      }
       setLoading(false);
-      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
-    }, 800);
+    }
   }
 
   return (
@@ -158,6 +178,12 @@ export function SignUpScreen({ navigation }: RootStackScreenProps<'SignUp'>) {
               error={errors.confirmar}
             />
           </View>
+
+          {erroApi ? (
+            <Text className="mt-4 text-center text-[13px] text-danger">
+              {erroApi}
+            </Text>
+          ) : null}
 
           <View className="mt-8">
             <Button

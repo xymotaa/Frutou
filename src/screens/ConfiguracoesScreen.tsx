@@ -14,6 +14,7 @@ import {
   TagIcon,
   UserIcon,
 } from '@/components/icons';
+import { signOut } from '@/state/session';
 import type { RootStackScreenProps } from '@/navigation/types';
 import { color } from '@/theme/tokens';
 
@@ -119,9 +120,7 @@ export function ConfiguracoesScreen({
         </Section>
 
         <Pressable
-          onPress={() =>
-            navigation.reset({ index: 0, routes: [{ name: 'Login' }] })
-          }
+          onPress={() => signOut()}
           accessibilityRole="button"
           accessibilityLabel="Sair da conta"
           className="mt-1 h-14 flex-row items-center justify-center gap-2 rounded-field bg-danger-soft active:opacity-80"

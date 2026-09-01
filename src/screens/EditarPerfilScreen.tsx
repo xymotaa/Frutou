@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -9,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ApiError } from '@/api/client';
 import { Avatar } from '@/components/Avatar';
 import { FormField } from '@/components/FormField';
 import {
@@ -19,7 +21,7 @@ import {
   PencilIcon,
   UserIcon,
 } from '@/components/icons';
-import { atualizarPerfil, usePerfil } from '@/data/mockPerfil';
+import { atualizarPerfil, usePerfil } from '@/state/perfil';
 import type { RootStackScreenProps } from '@/navigation/types';
 import { escolherAcaoFoto } from '@/services/pickImage';
 import { color } from '@/theme/tokens';
@@ -29,11 +31,12 @@ export function EditarPerfilScreen({
 }: RootStackScreenProps<'EditarPerfil'>) {
   const perfil = usePerfil();
   const [nome, setNome] = useState(perfil.nome);
-  const [email, setEmail] = useState(perfil.email);
   const [telefone, setTelefone] = useState(perfil.telefone);
   const [bairro, setBairro] = useState(perfil.bairro);
   const [bio, setBio] = useState(perfil.bio);
   const [fotoUri, setFotoUri] = useState<string | null>(perfil.fotoUri);
+  const [salvando, setSalvando] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
   async function handleFoto() {
     const acao = await escolherAcaoFoto(!!fotoUri);
@@ -41,10 +44,26 @@ export function EditarPerfilScreen({
     else if (acao.tipo === 'remover') setFotoUri(null);
   }
 
-  function handleSalvar() {
-    // TODO: enviar para usersService.update quando o backend existir.
-    atualizarPerfil({ nome, email, telefone, bairro, bio, fotoUri });
-    navigation.goBack();
+  async function handleSalvar() {
+    setSalvando(true);
+    setErro(null);
+    try {
+      await atualizarPerfil({
+        nome,
+        telefone,
+        bairro,
+        bio,
+        // só envia a foto se mudou (URI local nova ou remoção)
+        fotoUri: fotoUri === perfil.fotoUri ? undefined : fotoUri,
+      });
+      navigation.goBack();
+    } catch (e) {
+      setErro(
+        e instanceof ApiError ? e.message : 'Não foi possível salvar. Tente de novo.',
+      );
+    } finally {
+      setSalvando(false);
+    }
   }
 
   return (
@@ -123,15 +142,18 @@ export function EditarPerfilScreen({
               autoCapitalize="words"
               trailing={<UserIcon size={18} color={color.muted} />}
             />
-            <FormField
-              label="Email"
-              value={email}
-              onChangeText={setEmail}
-              placeholder="voce@email.com"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              trailing={<MailIcon size={18} color={color.muted} />}
-            />
+            <View className="gap-1.5">
+              <Text className="text-[13px] font-semibold text-ink">Email</Text>
+              <View className="h-12 flex-row items-center gap-2 rounded-field border border-line bg-input px-3 opacity-60">
+                <Text className="flex-1 text-[14px] text-ink">
+                  {perfil.email}
+                </Text>
+                <MailIcon size={18} color={color.muted} />
+              </View>
+              <Text className="text-[12px] text-muted">
+                O email não pode ser alterado.
+              </Text>
+            </View>
             <FormField
               label="Telefone"
               value={telefone}
@@ -157,17 +179,30 @@ export function EditarPerfilScreen({
         </ScrollView>
 
         <View className="border-t border-line bg-surface px-5 pb-2 pt-3">
+          {erro ? (
+            <Text className="mb-2 text-center text-[13px] text-danger">{erro}</Text>
+          ) : null}
           <View className="items-center">
             <Pressable
               onPress={handleSalvar}
+              disabled={salvando}
               accessibilityRole="button"
               accessibilityLabel="Salvar alterações"
-              className="h-12 w-full max-w-[340px] flex-row items-center justify-center gap-2 rounded-field bg-primary active:opacity-80"
+              accessibilityState={{ disabled: salvando }}
+              className={`h-12 w-full max-w-[340px] flex-row items-center justify-center gap-2 rounded-field bg-primary active:opacity-80 ${
+                salvando ? 'opacity-60' : ''
+              }`}
             >
-              <CheckCircleIcon size={18} color="#FFFFFF" />
-              <Text className="text-[15px] font-semibold text-white">
-                Salvar alterações
-              </Text>
+              {salvando ? (
+                <ActivityIndicator color="#FFFFFF" />
+              ) : (
+                <>
+                  <CheckCircleIcon size={18} color="#FFFFFF" />
+                  <Text className="text-[15px] font-semibold text-white">
+                    Salvar alterações
+                  </Text>
+                </>
+              )}
             </Pressable>
           </View>
         </View>
