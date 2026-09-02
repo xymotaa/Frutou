@@ -9,6 +9,9 @@ O que já está pronto no repo:
 - `app.json` com `android.package` = `dev.frutou.app` e `ios.bundleIdentifier`.
 - `react-native-maps` instalado; mapa iOS = Apple Maps (sem chave), mapa
   Android = tiles do OpenStreetMap (sem chave, sem Google).
+- `react-native-worklets` instalado e o plugin no `babel.config.js` (peer do
+  reanimated 4 — sem isso o app crasha fora do Expo Go).
+- `expo-doctor` passando 18/18.
 
 Antes de tudo, confirme o `.env`:
 
