@@ -86,11 +86,12 @@ export function SignUpScreen({ navigation }: RootStackScreenProps<'SignUp'>) {
     <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingBottom: 24 }}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 32 }}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
         >
           <View className="items-center pt-8 pb-8">
@@ -192,8 +193,6 @@ export function SignUpScreen({ navigation }: RootStackScreenProps<'SignUp'>) {
               loading={loading}
             />
           </View>
-
-          <View className="grow" />
 
           <View className="flex-row justify-center pt-8">
             <Text className="text-[13px] text-muted">Já tem conta? </Text>

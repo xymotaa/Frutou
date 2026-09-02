@@ -60,7 +60,11 @@ async function fetchComTimeout(
     return await fetch(url, { ...init, signal: ctrl.signal });
   } catch (e) {
     if (e instanceof Error && e.name === 'AbortError') {
-      throw new ApiError(0, 'Tempo esgotado. Verifique sua conexão.', 'timeout');
+      throw new ApiError(
+        0,
+        'O servidor demorou para responder. Ele pode estar iniciando — tente de novo em alguns segundos.',
+        'timeout',
+      );
     }
     throw new ApiError(0, 'Falha de conexão. Verifique sua rede.', 'network');
   } finally {
@@ -84,7 +88,8 @@ async function request<T>(
       },
       body: body !== undefined ? JSON.stringify(body) : undefined,
     },
-    15000,
+    // O free tier do Render hiberna e leva ~30-50s para acordar na 1ª request.
+    45000,
   );
   return parse<T>(res);
 }
@@ -131,7 +136,7 @@ async function upload<T>(
       headers: { ...(await authHeaders()) }, // sem Content-Type: o fetch define o boundary
       body: form,
     },
-    30000, // upload de fotos pode demorar mais
+    60000, // upload de fotos + possível cold start do Render
   );
   return parse<T>(res);
 }

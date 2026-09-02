@@ -53,11 +53,12 @@ export function LoginScreen({ navigation }: RootStackScreenProps<'Login'>) {
     <SafeAreaView className="flex-1 bg-background" edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingBottom: 24 }}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 32 }}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
         >
           <View className="items-center pt-12 pb-14">
@@ -117,8 +118,6 @@ export function LoginScreen({ navigation }: RootStackScreenProps<'Login'>) {
               onPress={() => navigation.navigate('SignUp')}
             />
           </View>
-
-          <View className="grow" />
 
           <Text className="pt-10 text-center text-[12px] leading-4 text-muted">
             Desenvolvido e mantido pela empresa Ryvera Code
