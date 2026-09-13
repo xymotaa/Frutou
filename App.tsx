@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Asset } from 'expo-asset';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { preloadImages } from '@/assets';
@@ -40,9 +41,11 @@ export default function App() {
   if (!ready) return null;
 
   return (
-    <SafeAreaProvider onLayout={onLayout}>
-      <StatusBar style="dark" />
-      <RootNavigator />
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider onLayout={onLayout}>
+        <StatusBar style="dark" />
+        <RootNavigator />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }
